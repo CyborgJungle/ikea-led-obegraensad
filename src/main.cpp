@@ -33,6 +33,7 @@
 #include "plugins/CheckerboardPlugin.h"
 #include "plugins/CirclePlugin.h"
 #include "plugins/CometPlugin.h"
+#include "plugins/CountdownPlugin.h"
 #include "plugins/DDPPlugin.h"
 #include "plugins/DrawPlugin.h"
 #include "plugins/FacePlugin.h"
@@ -322,6 +323,7 @@ void baseSetup()
   // added last so the ids of existing plugins (persisted, scheduled) stay the same
   pluginManager.addPlugin(new TextPlugin());
   pluginManager.addPlugin(new BoardPlugin());
+  pluginManager.addPlugin(new CountdownPlugin());
 
   Screen.clear();
   pluginManager.init();
