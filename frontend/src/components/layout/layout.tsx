@@ -42,6 +42,7 @@ export const Layout: Component<{
 
   const navItems: NavItem[] = [
     { href: "#/", label: "Display", icon: "fa-table-cells" },
+    { href: "#/text", label: "Scrolling Text", icon: "fa-font" },
     {
       href: "#/creator",
       label: "Animation Creator",

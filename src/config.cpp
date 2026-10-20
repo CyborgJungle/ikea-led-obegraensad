@@ -7,6 +7,7 @@ Config config;
 Config::Config()
 {
   initialized = false;
+  scrollTextVersion = 0;
 #ifdef ENABLE_STORAGE
   storageAvailable = false;
 #endif
@@ -54,6 +55,8 @@ void Config::begin()
   Serial.println(tzInfo);
   Serial.print("[Config] Auto-Start Schedule: ");
   Serial.println(autoStartSchedule ? "enabled" : "disabled");
+  Serial.print("[Config] Scroll Text: ");
+  Serial.println(scrollText);
   Serial.println("[Config] ============================================");
 }
 
@@ -64,6 +67,9 @@ void Config::setDefaults()
   ntpServer = String(NTP_SERVER);
   tzInfo = String(TZ_INFO);
   autoStartSchedule = false;
+  scrollText = "Hello!";
+  scrollSpeed = 60;
+  scrollTextVersion++;
 }
 
 void Config::load()
@@ -80,6 +86,8 @@ void Config::load()
     ntpServer = preferences.getString("ntpServer", String(NTP_SERVER));
     tzInfo = preferences.getString("tzInfo", String(TZ_INFO));
     autoStartSchedule = preferences.getBool("autoSchedule", false);
+    setScrollText(preferences.getString("scrollText", scrollText));
+    setScrollSpeed(preferences.getUShort("scrollSpeed", scrollSpeed));
     
     Serial.println("[Config] Configuration loaded from storage");
   } catch (...) {
@@ -102,6 +110,8 @@ void Config::save()
     preferences.putString("ntpServer", ntpServer);
     preferences.putString("tzInfo", tzInfo);
     preferences.putBool("autoSchedule", autoStartSchedule);
+    preferences.putString("scrollText", scrollText);
+    preferences.putUShort("scrollSpeed", scrollSpeed);
     
     Serial.println("[Config] Configuration saved");
   } catch (...) {
@@ -160,6 +170,30 @@ void Config::setAutoStartSchedule(bool autoStart)
   autoStartSchedule = autoStart;
 }
 
+String Config::getScrollText() const
+{
+  return scrollText;
+}
+
+uint16_t Config::getScrollSpeed() const
+{
+  return scrollSpeed;
+}
+
+// an empty text is allowed, it blanks the screen
+void Config::setScrollText(const String& text)
+{
+  if (text.length() <= SCROLL_TEXT_MAX_LENGTH && text != scrollText) {
+    scrollText = text;
+    scrollTextVersion++;
+  }
+}
+
+void Config::setScrollSpeed(int speed)
+{
+  scrollSpeed = constrain(speed, SCROLL_SPEED_MIN, SCROLL_SPEED_MAX);
+}
+
 
 String Config::toJson() const
 {
@@ -168,6 +202,8 @@ String Config::toJson() const
   doc["ntpServer"] = ntpServer;
   doc["tzInfo"] = tzInfo;
   doc["autoStartSchedule"] = autoStartSchedule;
+  doc["scrollText"] = scrollText;
+  doc["scrollSpeed"] = scrollSpeed;
   
   String output;
   serializeJson(doc, output);
@@ -215,6 +251,14 @@ bool Config::fromJson(const String& json)
   
   if (doc["autoStartSchedule"].is<bool>()) {
     autoStartSchedule = doc["autoStartSchedule"].as<bool>();
+  }
+
+  if (doc["scrollText"].is<String>()) {
+    setScrollText(doc["scrollText"].as<String>());
+  }
+
+  if (doc["scrollSpeed"].is<int>()) {
+    setScrollSpeed(doc["scrollSpeed"].as<int>());
   }
   
   return true;

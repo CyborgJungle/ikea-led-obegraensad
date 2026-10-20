@@ -54,6 +54,7 @@
 #include "plugins/SpiralPlugin.h"
 #include "plugins/StarsPlugin.h"
 #include "plugins/TetrisPlugin.h"
+#include "plugins/TextPlugin.h"
 #include "plugins/TickingClockPlugin.h"
 #include "plugins/TronPlugin.h"
 #include "plugins/WaveBarsPlugin.h"
@@ -317,6 +318,8 @@ void baseSetup()
   pluginManager.addPlugin(new DDPPlugin());
   pluginManager.addPlugin(new ArtNetPlugin());
 #endif
+  // added last so the ids of existing plugins (persisted, scheduled) stay the same
+  pluginManager.addPlugin(new TextPlugin());
 
   Screen.clear();
   pluginManager.init();
