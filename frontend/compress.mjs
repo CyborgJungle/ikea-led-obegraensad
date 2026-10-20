@@ -37,7 +37,9 @@ gzip(
   { numiterations: 30 },
   (err, output) => {
     if (err) {
-      return console.error(err);
+      console.error(err);
+      process.exitCode = 1;
+      return;
     }
 
     const FILE = `#include "webgui.h"

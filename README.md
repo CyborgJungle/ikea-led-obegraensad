@@ -256,6 +256,8 @@ For ESP8266, WiFi Manager is not available. Set `WIFI_SSID` and `WIFI_PASSWORD` 
 
 ## OTA Updates
 
+**ESP32-S3 DevKitC / N16R8:** Follow the [fork-specific build and upload guide](docs/esp32s3-ota.md). Use the ESP32-S3 OTA artifact, not the generic `esp32dev` binary.
+
 Over-The-Air (OTA) updates allow you to upload new firmware wirelessly without a USB connection. This is powered by [ElegantOTA](https://github.com/ayushsharma82/ElegantOTA).
 
 ### Configuration
