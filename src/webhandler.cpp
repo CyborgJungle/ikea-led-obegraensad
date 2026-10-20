@@ -11,6 +11,8 @@
 #include <cstdlib>
 #ifdef ESP32
 #include <WiFi.h>
+#include <esp_core_dump.h>
+#include <esp_flash.h>
 #else
 #include <ESP8266WiFi.h>
 #endif
@@ -512,3 +514,78 @@ void handleResetConfig(AsyncWebServerRequest *request)
     sendJsonError(request, 500, "Error resetting configuration");
   }
 }
+
+#ifdef ESP32
+// The last crash (panic or watchdog) is written to the coredump partition and
+// survives reboots and OTA updates, so it can be read back without a serial cable.
+void handleGetCoreDump(AsyncWebServerRequest *request)
+{
+  JsonDocument jsonDocument;
+  jsonDocument["resetReason"] = getResetReason();
+
+  size_t address = 0;
+  size_t size = 0;
+  if (esp_core_dump_image_get(&address, &size) != ESP_OK)
+  {
+    jsonDocument["available"] = false;
+  }
+  else
+  {
+    jsonDocument["available"] = true;
+    jsonDocument["size"] = size;
+
+    esp_core_dump_summary_t *summary =
+        static_cast<esp_core_dump_summary_t *>(malloc(sizeof(esp_core_dump_summary_t)));
+    if (summary != nullptr && esp_core_dump_get_summary(summary) == ESP_OK)
+    {
+      char hex[11];
+      jsonDocument["task"] = summary->exc_task;
+      snprintf(hex, sizeof(hex), "0x%08lx", (unsigned long)summary->exc_pc);
+      jsonDocument["pc"] = hex;
+      jsonDocument["appElfSha256"] = summary->app_elf_sha256;
+      jsonDocument["excCause"] = summary->ex_info.exc_cause;
+      snprintf(hex, sizeof(hex), "0x%08lx", (unsigned long)summary->ex_info.exc_vaddr);
+      jsonDocument["excVaddr"] = hex;
+      jsonDocument["backtraceCorrupted"] = summary->exc_bt_info.corrupted;
+      JsonArray backtrace = jsonDocument["backtrace"].to<JsonArray>();
+      for (uint32_t i = 0; i < summary->exc_bt_info.depth && i < 16; i++)
+      {
+        snprintf(hex, sizeof(hex), "0x%08lx", (unsigned long)summary->exc_bt_info.bt[i]);
+        backtrace.add(hex);
+      }
+    }
+    free(summary);
+  }
+
+  String output;
+  serializeJson(jsonDocument, output);
+  request->send(200, "application/json", output);
+}
+
+// Raw ELF core dump, decode it with: esp-coredump info_corefile -t raw -c coredump.bin firmware.elf
+void handleGetCoreDumpRaw(AsyncWebServerRequest *request)
+{
+  size_t address = 0;
+  size_t size = 0;
+  if (esp_core_dump_image_get(&address, &size) != ESP_OK)
+  {
+    sendJsonError(request, 404, "No core dump stored");
+    return;
+  }
+
+  AsyncWebServerResponse *response = request->beginResponse(
+      "application/octet-stream",
+      size,
+      [address, size](uint8_t *buffer, size_t maxLen, size_t index) -> size_t
+      {
+        size_t length = std::min(maxLen, size - index);
+        if (length == 0 || esp_flash_read(NULL, buffer, address + index, length) != ESP_OK)
+        {
+          return 0;
+        }
+        return length;
+      });
+  response->addHeader("Content-Disposition", "attachment; filename=coredump.bin");
+  request->send(response);
+}
+#endif

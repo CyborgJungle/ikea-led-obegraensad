@@ -48,21 +48,85 @@ void WeatherPlugin::setup()
 
 void WeatherPlugin::loop()
 {
+#ifdef ESP32
+  // the fetch runs in its own task, draw its result from here so only the
+  // screen drawing task writes the screen buffer
+  uint8_t result = fetchResult.exchange(FETCH_NONE);
+  if (result == FETCH_OK)
+  {
+    drawWeather();
+  }
+  else if (result == FETCH_FAILED)
+  {
+    drawError();
+  }
+
+  if (fetchRunning)
+  {
+    return;
+  }
+#endif
+
   if (this->lastUpdate == 0 || millis() >= this->lastUpdate + (1000 * 60 * 30))
   {
-    this->update();
     this->lastUpdate = millis();
     Serial.println("updating weather");
+#ifdef ESP32
+    startFetch();
+#else
+    if (this->update())
+    {
+      drawWeather();
+    }
+    else
+    {
+      drawError();
+    }
+#endif
   };
 }
 
-void WeatherPlugin::update()
+#ifdef ESP32
+// A slow or stalled HTTPS response used to block the screen drawing task long
+// enough to starve the idle task on core 0 and trigger the task watchdog, so the
+// request now runs in a one-shot task on core 1.
+void WeatherPlugin::startFetch()
+{
+  fetchRunning = true;
+  BaseType_t created = xTaskCreatePinnedToCore(fetchTask,
+                                               "weatherFetch",
+                                               12288,
+                                               this,
+                                               1,
+                                               NULL,
+                                               1);
+  if (created != pdPASS)
+  {
+    Serial.println("Could not start weather fetch task");
+    fetchResult = FETCH_FAILED;
+    fetchRunning = false;
+  }
+}
+
+void WeatherPlugin::fetchTask(void *parameter)
+{
+  WeatherPlugin *plugin = static_cast<WeatherPlugin *>(parameter);
+  bool success = plugin->update();
+  plugin->fetchResult = success ? FETCH_OK : FETCH_FAILED;
+  plugin->fetchRunning = false;
+  vTaskDelete(NULL);
+}
+#endif
+
+// Fetches the weather and fills the cache, returns false if that failed.
+// Does not touch the screen, on ESP32 it runs outside the screen drawing task.
+bool WeatherPlugin::update()
 {
   // Check WiFi connection first
   if (WiFi.status() != WL_CONNECTED)
   {
     Serial.println("WiFi not connected, skipping weather update");
-    return;
+    return false;
   }
 
   String weatherLocation = config.getWeatherLocation();
@@ -81,7 +145,7 @@ void WeatherPlugin::update()
   else
   {
     Serial.println("Secure client not initialized!");
-    return;
+    return false;
   }
 #endif
 #ifdef ESP8266
@@ -109,7 +173,7 @@ void WeatherPlugin::update()
       Serial.print("JSON parsing failed: ");
       Serial.println(error.c_str());
       http.end();
-      return;
+      return false;
     }
 
     int temperature = round(doc["current_condition"][0]["temp_C"].as<float>());
@@ -160,39 +224,46 @@ void WeatherPlugin::update()
     cachedWeatherIcon = weatherIcon;
     cachedIconY = iconY;
     cachedTempY = tempY;
-
-    // Draw the weather
-    drawWeather();
-  }
-  else
-  {
-    Serial.print("HTTP request failed with code: ");
-    Serial.println(code);
-
-    Screen.clear();
-
-    Screen.setPixel(7, 4, 1);
-    Screen.setPixel(8, 4, 1);
-    Screen.setPixel(7, 5, 1);
-    Screen.setPixel(8, 5, 1);
-    Screen.setPixel(7, 6, 1);
-    Screen.setPixel(8, 6, 1);
-    Screen.setPixel(7, 7, 1);
-    Screen.setPixel(8, 7, 1);
-    Screen.setPixel(7, 8, 1);
-    Screen.setPixel(8, 8, 1);
-
-    Screen.setPixel(7, 10, 1);
-    Screen.setPixel(8, 10, 1);
-    Screen.setPixel(7, 11, 1);
-    Screen.setPixel(8, 11, 1);
+    http.end();
+    return true;
   }
 
+  Serial.print("HTTP request failed with code: ");
+  Serial.println(code);
   http.end();
+  return false;
+}
+
+void WeatherPlugin::drawError()
+{
+  Screen.clear();
+
+  Screen.setPixel(7, 4, 1);
+  Screen.setPixel(8, 4, 1);
+  Screen.setPixel(7, 5, 1);
+  Screen.setPixel(8, 5, 1);
+  Screen.setPixel(7, 6, 1);
+  Screen.setPixel(8, 6, 1);
+  Screen.setPixel(7, 7, 1);
+  Screen.setPixel(8, 7, 1);
+  Screen.setPixel(7, 8, 1);
+  Screen.setPixel(8, 8, 1);
+
+  Screen.setPixel(7, 10, 1);
+  Screen.setPixel(8, 10, 1);
+  Screen.setPixel(7, 11, 1);
+  Screen.setPixel(8, 11, 1);
 }
 
 void WeatherPlugin::teardown()
 {
+#ifdef ESP32
+  // a running fetch task still uses the client and ends it itself
+  if (fetchRunning)
+  {
+    return;
+  }
+#endif
   http.end();
 }
 

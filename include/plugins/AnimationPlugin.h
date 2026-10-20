@@ -11,6 +11,7 @@ private:
   size_t step = 0;
   std::vector<std::vector<int>> customAnimationFrames;
   int frameDelay = 400;
+  unsigned long lastFrame = 0;
 
 public:
   void setup() override;

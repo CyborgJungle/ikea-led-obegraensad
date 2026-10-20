@@ -24,6 +24,12 @@ void initWebServer()
 
   server.on("/api/info", HTTP_GET, handleGetInfo);
 
+#ifdef ESP32
+  // registered before /api/coredump, which would otherwise match the raw path too
+  server.on("/api/coredump/raw", HTTP_GET, handleGetCoreDumpRaw);
+  server.on("/api/coredump", HTTP_GET, handleGetCoreDump);
+#endif
+
   // Handle API request to set an active plugin by ID
   server.on("/api/plugin", HTTP_PATCH, handleSetPlugin);
 
