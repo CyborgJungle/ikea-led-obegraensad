@@ -53,6 +53,8 @@ void startGui(AsyncWebServerRequest *request)
 {
   AsyncWebServerResponse *response = request->beginResponse(200, "text/html", GUI_HTML, GUI_HTML_SIZE);
   response->addHeader("Content-Encoding", "gzip");
+  // the page changes with every firmware update, never serve a stale copy
+  response->addHeader("Cache-Control", "no-cache");
   request->send(response);
 }
 

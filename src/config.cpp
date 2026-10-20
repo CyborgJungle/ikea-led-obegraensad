@@ -7,7 +7,7 @@ Config config;
 Config::Config()
 {
   initialized = false;
-  scrollTextVersion = 0;
+  textVersion = 0;
 #ifdef ENABLE_STORAGE
   storageAvailable = false;
 #endif
@@ -69,7 +69,10 @@ void Config::setDefaults()
   autoStartSchedule = false;
   scrollText = "Hello!";
   scrollSpeed = 60;
-  scrollTextVersion++;
+  scrollSize = SIZE_LARGE;
+  boardText = "Menu\nCoffee 3\nTea 2,50";
+  boardSpeed = 120;
+  textVersion++;
 }
 
 void Config::load()
@@ -88,6 +91,9 @@ void Config::load()
     autoStartSchedule = preferences.getBool("autoSchedule", false);
     setScrollText(preferences.getString("scrollText", scrollText));
     setScrollSpeed(preferences.getUShort("scrollSpeed", scrollSpeed));
+    setScrollSize(preferences.getUChar("scrollSize", scrollSize));
+    setBoardText(preferences.getString("boardText", boardText));
+    setBoardSpeed(preferences.getUShort("boardSpeed", boardSpeed));
     
     Serial.println("[Config] Configuration loaded from storage");
   } catch (...) {
@@ -112,6 +118,9 @@ void Config::save()
     preferences.putBool("autoSchedule", autoStartSchedule);
     preferences.putString("scrollText", scrollText);
     preferences.putUShort("scrollSpeed", scrollSpeed);
+    preferences.putUChar("scrollSize", scrollSize);
+    preferences.putString("boardText", boardText);
+    preferences.putUShort("boardSpeed", boardSpeed);
     
     Serial.println("[Config] Configuration saved");
   } catch (...) {
@@ -185,13 +194,50 @@ void Config::setScrollText(const String& text)
 {
   if (text.length() <= SCROLL_TEXT_MAX_LENGTH && text != scrollText) {
     scrollText = text;
-    scrollTextVersion++;
+    textVersion++;
   }
 }
 
 void Config::setScrollSpeed(int speed)
 {
   scrollSpeed = constrain(speed, SCROLL_SPEED_MIN, SCROLL_SPEED_MAX);
+}
+
+uint8_t Config::getScrollSize() const
+{
+  return scrollSize;
+}
+
+void Config::setScrollSize(int size)
+{
+  const uint8_t valid = constrain(size, SIZE_SMALL, SIZE_LARGE);
+  if (valid != scrollSize) {
+    scrollSize = valid;
+    textVersion++;
+  }
+}
+
+String Config::getBoardText() const
+{
+  return boardText;
+}
+
+void Config::setBoardText(const String& text)
+{
+  if (text.length() <= BOARD_TEXT_MAX_LENGTH && text != boardText) {
+    boardText = text;
+    textVersion++;
+  }
+}
+
+uint16_t Config::getBoardSpeed() const
+{
+  return boardSpeed;
+}
+
+void Config::setBoardSpeed(int speed)
+{
+  boardSpeed = constrain(speed, SCROLL_SPEED_MIN, SCROLL_SPEED_MAX);
 }
 
 
@@ -204,6 +250,9 @@ String Config::toJson() const
   doc["autoStartSchedule"] = autoStartSchedule;
   doc["scrollText"] = scrollText;
   doc["scrollSpeed"] = scrollSpeed;
+  doc["scrollSize"] = scrollSize;
+  doc["boardText"] = boardText;
+  doc["boardSpeed"] = boardSpeed;
   
   String output;
   serializeJson(doc, output);
@@ -259,6 +308,18 @@ bool Config::fromJson(const String& json)
 
   if (doc["scrollSpeed"].is<int>()) {
     setScrollSpeed(doc["scrollSpeed"].as<int>());
+  }
+
+  if (doc["scrollSize"].is<int>()) {
+    setScrollSize(doc["scrollSize"].as<int>());
+  }
+
+  if (doc["boardText"].is<String>()) {
+    setBoardText(doc["boardText"].as<String>());
+  }
+
+  if (doc["boardSpeed"].is<int>()) {
+    setBoardSpeed(doc["boardSpeed"].as<int>());
   }
   
   return true;
