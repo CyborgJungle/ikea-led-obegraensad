@@ -47,6 +47,18 @@
     height: 100dvh;
   }
 
+  /* keep the app fixed to the phone screen: no double-tap zoom (tapping the
+     matrix), no text resizing on rotation, no rubber-band scrolling of the page */
+  html {
+    touch-action: manipulation;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    overscroll-behavior: none;
+  }
+
   @supports (padding: max(0px)) {
     body {
       padding-left: env(safe-area-inset-left);
@@ -164,7 +176,7 @@
   }
 
   .input {
-    @apply w-full rounded-xl border border-line bg-raised px-3 py-2.5 text-sm text-fg outline-none transition focus:border-accent/60 focus:ring-2 focus:ring-accent/20;
+    @apply w-full rounded-xl border border-line bg-raised px-3 py-2.5 text-base sm:text-sm text-fg outline-none transition focus:border-accent/60 focus:ring-2 focus:ring-accent/20;
   }
 
   .segmented {
