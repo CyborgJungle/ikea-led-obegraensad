@@ -4,6 +4,7 @@
 void AnimationPlugin::setup()
 {
   this->step = 0;
+  this->lastFrame = 0;
   if (customAnimationFrames.size() == 0)
   {
     Screen.setPixel(7, 4, 1);
@@ -28,8 +29,11 @@ void AnimationPlugin::loop()
 {
   size_t size = customAnimationFrames.size();
 
-  if (size > 0)
+  // wait without blocking: loop() runs under the plugin lock, a long frame
+  // delay would stall plugin switches from the web task into the watchdog
+  if (size > 0 && (lastFrame == 0 || millis() - lastFrame >= (unsigned long)frameDelay))
   {
+    lastFrame = millis();
     // The frame list can shrink under us (resetFrames, a shorter upload)
     if (this->step >= size)
     {
@@ -48,8 +52,6 @@ void AnimationPlugin::loop()
     {
       this->step = 0;
     }
-
-    Screen.presentAndWait(frameDelay);
   }
 }
 

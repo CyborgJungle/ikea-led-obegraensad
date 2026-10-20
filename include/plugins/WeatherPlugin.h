@@ -11,6 +11,9 @@
 #endif
 #include "PluginManager.h"
 #include <ArduinoJson.h>
+#ifdef ESP32
+#include <atomic>
+#endif
 class WeatherPlugin : public Plugin
 {
 private:
@@ -18,6 +21,20 @@ private:
   HTTPClient http;
 #ifdef ESP32
   WiFiClientSecure *secureClient = nullptr;
+
+  enum : uint8_t
+  {
+    FETCH_NONE,
+    FETCH_OK,
+    FETCH_FAILED
+  };
+  // set by the fetch task, drawn and reset by loop()
+  std::atomic<uint8_t> fetchResult{FETCH_NONE};
+  // set before the fetch task starts and cleared by it when done
+  std::atomic<bool> fetchRunning{false};
+
+  void startFetch();
+  static void fetchTask(void *parameter);
 #endif
 #ifdef ESP8266
   WiFiClient wiFiClient;
@@ -41,6 +58,7 @@ private:
 
 private:
   void drawWeather();
+  void drawError();
 
 public:
   ~WeatherPlugin()
@@ -54,7 +72,7 @@ public:
 #endif
   }
 
-  void update();
+  bool update();
   void forceRefresh();
   void setup() override;
   void loop() override;
