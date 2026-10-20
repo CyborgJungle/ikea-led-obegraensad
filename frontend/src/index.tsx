@@ -7,6 +7,7 @@ import { StoreProvider } from "./contexts/store";
 import { Creator } from "./creator";
 import Scheduler from "./scheduler";
 import Settings from "./settings";
+import TextPage from "./text";
 
 const Router = () => {
   const [hash, setHash] = createSignal(window.location.hash);
@@ -30,6 +31,9 @@ const Router = () => {
         </Match>
         <Match when={location() === "/scheduler"}>
           <Scheduler />
+        </Match>
+        <Match when={location() === "/text"}>
+          <TextPage />
         </Match>
         <Match when={location() === "/settings"}>
           <Settings />
