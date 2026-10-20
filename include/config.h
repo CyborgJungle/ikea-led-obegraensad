@@ -28,6 +28,9 @@ private:
   uint16_t boardSpeed;
   // bumped on every text change, the Text and Board plugins reload when it differs
   volatile uint32_t textVersion;
+  uint16_t countdownSeconds;
+  // bumped on every start request, also with the same duration, to restart it
+  volatile uint32_t countdownRun;
   bool initialized;
 
 public:
@@ -56,6 +59,8 @@ public:
   String getBoardText() const;
   uint16_t getBoardSpeed() const;
   uint32_t getTextVersion() const { return textVersion; }
+  uint16_t getCountdownSeconds() const { return countdownSeconds; }
+  uint32_t getCountdownRun() const { return countdownRun; }
   bool isInitialized() const { return initialized; }
   
   // Setters with validation
@@ -68,12 +73,15 @@ public:
   void setScrollSize(int size);
   void setBoardText(const String& text);
   void setBoardSpeed(int speed);
+  // sets the duration and restarts a running countdown
+  void startCountdown(int seconds);
 
   static constexpr size_t SCROLL_TEXT_MAX_LENGTH = 200;
   static constexpr uint16_t SCROLL_SPEED_MIN = 20;  // ms per pixel
   static constexpr uint16_t SCROLL_SPEED_MAX = 250;
   enum ScrollSize : uint8_t { SIZE_SMALL, SIZE_MEDIUM, SIZE_LARGE };
   static constexpr size_t BOARD_TEXT_MAX_LENGTH = 500;
+  static constexpr uint16_t COUNTDOWN_MAX_SECONDS = 5999; // 99:59
   
   // Export to JSON
   String toJson() const;

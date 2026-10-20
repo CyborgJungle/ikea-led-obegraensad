@@ -8,6 +8,7 @@ Config::Config()
 {
   initialized = false;
   textVersion = 0;
+  countdownRun = 0;
 #ifdef ENABLE_STORAGE
   storageAvailable = false;
 #endif
@@ -72,6 +73,7 @@ void Config::setDefaults()
   scrollSize = SIZE_LARGE;
   boardText = "Menu\nCoffee 3\nTea 2,50";
   boardSpeed = 120;
+  countdownSeconds = 60;
   textVersion++;
 }
 
@@ -94,6 +96,7 @@ void Config::load()
     setScrollSize(preferences.getUChar("scrollSize", scrollSize));
     setBoardText(preferences.getString("boardText", boardText));
     setBoardSpeed(preferences.getUShort("boardSpeed", boardSpeed));
+    countdownSeconds = constrain(preferences.getUShort("countdown", countdownSeconds), 1, COUNTDOWN_MAX_SECONDS);
     
     Serial.println("[Config] Configuration loaded from storage");
   } catch (...) {
@@ -121,6 +124,7 @@ void Config::save()
     preferences.putUChar("scrollSize", scrollSize);
     preferences.putString("boardText", boardText);
     preferences.putUShort("boardSpeed", boardSpeed);
+    preferences.putUShort("countdown", countdownSeconds);
     
     Serial.println("[Config] Configuration saved");
   } catch (...) {
@@ -240,6 +244,12 @@ void Config::setBoardSpeed(int speed)
   boardSpeed = constrain(speed, SCROLL_SPEED_MIN, SCROLL_SPEED_MAX);
 }
 
+void Config::startCountdown(int seconds)
+{
+  countdownSeconds = constrain(seconds, 1, COUNTDOWN_MAX_SECONDS);
+  countdownRun++;
+}
+
 
 String Config::toJson() const
 {
@@ -253,6 +263,7 @@ String Config::toJson() const
   doc["scrollSize"] = scrollSize;
   doc["boardText"] = boardText;
   doc["boardSpeed"] = boardSpeed;
+  doc["countdownSeconds"] = countdownSeconds;
   
   String output;
   serializeJson(doc, output);
@@ -320,6 +331,10 @@ bool Config::fromJson(const String& json)
 
   if (doc["boardSpeed"].is<int>()) {
     setBoardSpeed(doc["boardSpeed"].as<int>());
+  }
+
+  if (doc["countdownSeconds"].is<int>()) {
+    startCountdown(doc["countdownSeconds"].as<int>());
   }
   
   return true;

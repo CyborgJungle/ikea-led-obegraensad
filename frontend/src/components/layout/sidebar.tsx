@@ -1,6 +1,7 @@
 import { type Component, createSignal, For, type JSX, Show } from "solid-js";
 
 import { useStore } from "../../contexts/store";
+import { CountdownControls } from "../countdown-controls";
 import { ToggleScheduleButton } from "../../scheduler";
 import type { BrightnessSchedule } from "../../types";
 
@@ -79,6 +80,14 @@ export const Sidebar: Component<SidebarProps> = (props) => {
             Set as default
           </button>
         </SidebarSection>
+
+        <Show
+          when={store.plugins.find((plugin) => plugin.id === store.plugin)?.name === "Countdown"}
+        >
+          <SidebarSection title="Countdown">
+            <CountdownControls />
+          </SidebarSection>
+        </Show>
       </Show>
 
       <SidebarSection title="Rotation" aside={`${[0, 90, 180, 270][store?.rotation || 0]}°`}>
