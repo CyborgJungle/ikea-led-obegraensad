@@ -1,36 +1,36 @@
 #include "plugins/TextPlugin.h"
 #include "config.h"
 
-static const font &textFont = fonts[0];
-// 7 pixel high glyphs, vertically centred
-static constexpr int TEXT_Y = 4;
-
 void TextPlugin::loadText()
 {
-  loadedVersion = config.getScrollTextVersion();
-  const String text = config.getScrollText();
+  loadedVersion = config.getTextVersion();
 
-  glyphs.clear();
-  for (size_t i = 0; i < text.length(); i++)
+  switch (config.getScrollSize())
   {
-    const uint8_t c = text[i];
-    // same as Screen.scrollText(): skip the UTF-8 lead byte of umlauts, the
-    // font keeps those glyphs at the position of the second byte
-    if (c == 195)
-    {
-      continue;
-    }
-    const bool known = c >= textFont.offset && c - textFont.offset < textFont.charCount;
-    glyphs.push_back(known ? c - textFont.offset : 0);
+  case Config::SIZE_SMALL:
+    font = &fontSmall;
+    break;
+  case Config::SIZE_MEDIUM:
+    font = &fontMedium;
+    break;
+  default:
+    font = &fontLarge;
   }
+
+  // one line: line breaks scroll by as spaces
+  glyphs.clear();
+  for (const GlyphLine &line : TextRender::decode(*font, config.getScrollText()))
+  {
+    if (!glyphs.empty())
+    {
+      glyphs.push_back(nullptr);
+    }
+    glyphs.insert(glyphs.end(), line.begin(), line.end());
+  }
+  textWidth = TextRender::width(*font, glyphs);
 
   // start just outside the right edge
   offset = -COLS;
-}
-
-int TextPlugin::textWidth() const
-{
-  return glyphs.size() * (textFont.sizeX + 1);
 }
 
 void TextPlugin::setup()
@@ -42,7 +42,7 @@ void TextPlugin::setup()
 
 void TextPlugin::loop()
 {
-  if (loadedVersion != config.getScrollTextVersion())
+  if (loadedVersion != config.getTextVersion())
   {
     loadText();
   }
@@ -55,16 +55,9 @@ void TextPlugin::loop()
   lastStep = now;
 
   Screen.clear();
-  for (size_t i = 0; i < glyphs.size(); i++)
-  {
-    const int x = i * (textFont.sizeX + 1) - offset;
-    if (x > -(textFont.sizeX + 1) && x < COLS)
-    {
-      Screen.drawBitmap(x, TEXT_Y, fontGlyph(textFont, glyphs[i]), textFont.sizeY, 8);
-    }
-  }
+  TextRender::draw(*font, glyphs, -offset, (ROWS - font->lineHeight) / 2);
 
-  if (++offset >= textWidth())
+  if (++offset >= textWidth)
   {
     offset = -COLS;
   }

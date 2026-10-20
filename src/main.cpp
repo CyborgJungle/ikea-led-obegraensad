@@ -24,6 +24,7 @@
 
 #include "plugins/ArtNet.h"
 #include "plugins/BigPongPlugin.h"
+#include "plugins/BoardPlugin.h"
 #include "plugins/AutoWalkerPlugin.h"
 #include "plugins/Blob.h"
 #include "plugins/BouncingBallPlugin.h"
@@ -320,6 +321,7 @@ void baseSetup()
 #endif
   // added last so the ids of existing plugins (persisted, scheduled) stay the same
   pluginManager.addPlugin(new TextPlugin());
+  pluginManager.addPlugin(new BoardPlugin());
 
   Screen.clear();
   pluginManager.init();

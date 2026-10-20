@@ -82,7 +82,8 @@ export const Layout: Component<{
         <div class="flex-1 min-h-0 flex flex-col overflow-y-auto lg:overflow-hidden lg:grid lg:grid-cols-[300px_1fr] lg:gap-4 lg:p-4">
           <header class="lg:hidden sticky top-0 z-30 flex items-center justify-between gap-2 border-b border-line bg-canvas/80 px-4 py-3 backdrop-blur-lg">
             <Brand />
-            <nav class="flex gap-1">
+            {/* six icons have to fit next to the brand on a 375px wide phone */}
+            <nav class="flex gap-0.5">
               <For each={visibleNavItems()}>
                 {(item) => (
                   <a
@@ -90,7 +91,7 @@ export const Layout: Component<{
                     aria-label={item.label}
                     title={item.label}
                     aria-current={isActive(item) ? "page" : undefined}
-                    class={`btn btn-icon ${isActive(item) ? "" : "btn-ghost"}`}
+                    class={`btn btn-icon size-9 ${isActive(item) ? "" : "btn-ghost"}`}
                   >
                     <i class={`fa-solid ${item.icon}`} />
                   </a>

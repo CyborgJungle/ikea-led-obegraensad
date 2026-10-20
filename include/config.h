@@ -23,8 +23,11 @@ private:
   bool autoStartSchedule;
   String scrollText;
   uint16_t scrollSpeed;
-  // bumped on every text/speed change, the Text plugin reloads when it differs
-  volatile uint32_t scrollTextVersion;
+  uint8_t scrollSize;
+  String boardText;
+  uint16_t boardSpeed;
+  // bumped on every text change, the Text and Board plugins reload when it differs
+  volatile uint32_t textVersion;
   bool initialized;
 
 public:
@@ -49,7 +52,10 @@ public:
   bool getAutoStartSchedule() const;
   String getScrollText() const;
   uint16_t getScrollSpeed() const;
-  uint32_t getScrollTextVersion() const { return scrollTextVersion; }
+  uint8_t getScrollSize() const;
+  String getBoardText() const;
+  uint16_t getBoardSpeed() const;
+  uint32_t getTextVersion() const { return textVersion; }
   bool isInitialized() const { return initialized; }
   
   // Setters with validation
@@ -59,10 +65,15 @@ public:
   void setAutoStartSchedule(bool autoStart);
   void setScrollText(const String& text);
   void setScrollSpeed(int speed);
+  void setScrollSize(int size);
+  void setBoardText(const String& text);
+  void setBoardSpeed(int speed);
 
   static constexpr size_t SCROLL_TEXT_MAX_LENGTH = 200;
   static constexpr uint16_t SCROLL_SPEED_MIN = 20;  // ms per pixel
   static constexpr uint16_t SCROLL_SPEED_MAX = 250;
+  enum ScrollSize : uint8_t { SIZE_SMALL, SIZE_MEDIUM, SIZE_LARGE };
+  static constexpr size_t BOARD_TEXT_MAX_LENGTH = 500;
   
   // Export to JSON
   String toJson() const;
