@@ -1,5 +1,7 @@
 import { type Component, createSignal, For, type JSX, Show } from "solid-js";
 
+import { TextControls } from "../text-controls";
+
 import { useStore } from "../../contexts/store";
 import { ToggleScheduleButton } from "../../scheduler";
 import type { BrightnessSchedule } from "../../types";
@@ -80,6 +82,8 @@ export const Sidebar: Component<SidebarProps> = (props) => {
           </button>
         </SidebarSection>
       </Show>
+
+      <TextControls />
 
       <SidebarSection title="Rotation" aside={`${[0, 90, 180, 270][store?.rotation || 0]}°`}>
         <div class="grid grid-cols-2 gap-2">

@@ -3,9 +3,9 @@ name: ESP32-S3 OTA firmware
 on:
   workflow_dispatch:
   push:
-    branches: [main, 'prep/**']
+    branches: [main, 'prep/**', 'feat/scrolling-text']
   pull_request:
-    branches: [main]
+    branches: [main, 'prep/**']
 
 permissions:
   contents: read
@@ -31,6 +31,13 @@ jobs:
         run: |
           npm install --global pnpm@12.8.1
           pnpm install --frozen-lockfile
+      - name: Check text rendering and frontend
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror -Iinclude tests/scrolling_text_test.cpp -o /tmp/scrolling-text-test
+          /tmp/scrolling-text-test
+          cd frontend
+          pnpm lint
+          pnpm exec tsc --noEmit -p tsconfig.app.json --erasableSyntaxOnly false
       - name: Rebuild embedded web application
         working-directory: frontend
         run: |

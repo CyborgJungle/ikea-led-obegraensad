@@ -254,6 +254,13 @@ For ESP8266, WiFi Manager is not available. Set `WIFI_SSID` and `WIFI_PASSWORD` 
 
 ---
 
+## Scrolling text
+
+The display page now includes a **Scrolling text** panel: enter a message,
+choose Small (5 × 7) or Large (10 × 14), set the speed, and press **Show text**.
+See [text controls and installation](docs/scrolling-text.md). This requires the
+firmware built from the text feature branch, including its embedded web app.
+
 ## OTA Updates
 
 **ESP32-S3 DevKitC / N16R8:** Follow the [fork-specific build and upload guide](docs/esp32s3-ota.md). Use the ESP32-S3 OTA artifact, not the generic `esp32dev` binary.

@@ -61,6 +61,7 @@
 
 #ifdef ENABLE_SERVER
 #include "plugins/AnimationPlugin.h"
+#include "plugins/TextPlugin.h"
 #include "plugins/BigClockPlugin.h"
 #include "plugins/ClockPlugin.h"
 #include "plugins/WeatherPlugin.h"
@@ -316,6 +317,7 @@ void baseSetup()
   pluginManager.addPlugin(new AnimationPlugin());
   pluginManager.addPlugin(new DDPPlugin());
   pluginManager.addPlugin(new ArtNetPlugin());
+  pluginManager.addPlugin(&scrollingText);
 #endif
 
   Screen.clear();

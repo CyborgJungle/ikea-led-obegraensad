@@ -35,3 +35,8 @@ void handleSetConfigBody(AsyncWebServerRequest *request,
                          size_t index,
                          size_t total);
 void handleResetConfig(AsyncWebServerRequest *request);
+
+void handleGetText(AsyncWebServerRequest *request);
+void handleStopText(AsyncWebServerRequest *request);
+void handleSetTextBody(AsyncWebServerRequest *request,
+                       uint8_t *data, size_t len, size_t index, size_t total);

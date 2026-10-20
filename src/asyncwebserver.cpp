@@ -23,6 +23,13 @@ void initWebServer()
   server.on("/api/removemessage", HTTP_GET, handleMessageRemove);
 
   server.on("/api/info", HTTP_GET, handleGetInfo);
+  server.on("/api/text", HTTP_GET, handleGetText);
+  server.on("/api/text", HTTP_DELETE, handleStopText);
+  server.on("/api/text", HTTP_POST, [](AsyncWebServerRequest *request) {
+    if (request->contentLength() == 0)
+      sendJsonError(request, 400, "Text request body is required");
+  },
+            nullptr, handleSetTextBody);
 
   // Handle API request to set an active plugin by ID
   server.on("/api/plugin", HTTP_PATCH, handleSetPlugin);

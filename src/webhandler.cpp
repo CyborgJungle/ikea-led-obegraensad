@@ -6,6 +6,7 @@
 #include "websocket.h"
 #include "PluginManager.h"
 #include "plugins/WeatherPlugin.h"
+#include "plugins/TextPlugin.h"
 #include <cerrno>
 #include <climits>
 #include <cstdlib>
@@ -511,4 +512,55 @@ void handleResetConfig(AsyncWebServerRequest *request)
     Serial.println("[WebHandler] ERROR: Exception in handleResetConfig");
     sendJsonError(request, 500, "Error resetting configuration");
   }
+}
+
+void handleGetText(AsyncWebServerRequest *request)
+{
+  JsonDocument document;
+  scrollingText.writeToJson(document.to<JsonObject>());
+  String output;
+  serializeJson(document, output);
+  request->send(200, "application/json", output);
+}
+
+void handleStopText(AsyncWebServerRequest *request)
+{
+  scrollingText.stop();
+  handleGetText(request);
+}
+
+void handleSetTextBody(AsyncWebServerRequest *request,
+                       uint8_t *data, size_t len, size_t index, size_t total)
+{
+  // Bound JSON allocation before accumulating a chunked body.
+  if (total == 0 || total > 1024)
+  {
+    if (index == 0)
+      sendJsonError(request, 413, "Text request must be between 1 and 1024 bytes");
+    return;
+  }
+  char *body = accumulateRequestBody(request, data, len, index, total);
+  if (!body)
+    return;
+  JsonDocument document;
+  if (deserializeJson(document, body) || !document["text"].is<const char *>() ||
+      !document["size"].is<int>() || !document["delay"].is<int>())
+  {
+    sendJsonError(request, 422, "Provide text, size (1 or 2) and delay (20 to 250 ms)");
+    return;
+  }
+  const char *value = document["text"].as<const char *>();
+  // Preserve embedded NULs in the length so validation rejects them.
+  const std::string text(value, document["text"].as<JsonString>().size());
+  if (!scrollingText.configure(text, document["size"].as<int>(), document["delay"].as<int>()))
+  {
+    sendJsonError(request, 422, "Use 1 to 120 printable ASCII characters, size 1 or 2 and delay 20 to 250 ms");
+    return;
+  }
+  // Like a manual mode change, showing text takes over animation scheduling.
+  Scheduler.clearSchedule();
+  if (pluginManager.getActivePlugin() != &scrollingText)
+    pluginManager.setActivePluginById(scrollingText.getId());
+  sendInfo();
+  handleGetText(request);
 }
