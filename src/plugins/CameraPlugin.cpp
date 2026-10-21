@@ -32,6 +32,30 @@ const char *const IDLE_ICON[] = {
     "................",
 };
 constexpr uint8_t IDLE_BRIGHTNESS = 60;
+
+// Camera images light most of the matrix at once; at full brightness that,
+// together with the constant WiFi traffic, browned out the lamp. Frames are
+// dimmed so the LEDs together never draw more than this share of all on.
+constexpr uint32_t POWER_BUDGET = (uint32_t)TOTAL_PIXELS * MAX_BRIGHTNESS * 35 / 100;
+
+void limitPower(uint8_t *frame)
+{
+  uint32_t load = 0;
+  for (int i = 0; i < TOTAL_PIXELS; i++)
+  {
+    load += frame[i];
+  }
+  load = load * Screen.getCurrentBrightness() / MAX_BRIGHTNESS;
+  if (load <= POWER_BUDGET)
+  {
+    return;
+  }
+  const uint32_t scale = POWER_BUDGET * 256 / load;
+  for (int i = 0; i < TOTAL_PIXELS; i++)
+  {
+    frame[i] = frame[i] * scale / 256;
+  }
+}
 } // namespace
 
 void CameraPlugin::receiveFrame(const uint8_t *pixels)
@@ -75,6 +99,7 @@ void CameraPlugin::loop()
     shownFrame = frameCount;
     portEXIT_CRITICAL(&frameMux);
 
+    limitPower(frame);
     for (int i = 0; i < TOTAL_PIXELS; i++)
     {
       Screen.setPixel(i % COLS, i / COLS, frame[i] > 0, frame[i]);
