@@ -18,7 +18,7 @@ const INFO: Record<string, { label?: string; group: ModeGroup; note: string }> =
   Board: { group: "create", note: "Menu board & reader" },
   Animation: { group: "create", note: "Frame by frame" },
   Camera: { group: "create", note: "Live from your phone" },
-  Countdown: { label: "Timer", group: "create", note: "Countdown" },
+  Countdown: { label: "Timer", group: "time", note: "Countdown" },
   BigClock: { label: "Big Clock", group: "time", note: "Large digits" },
   Clock: { group: "time", note: "Hours and minutes" },
   PongClock: { label: "Pong Clock", group: "time", note: "Pong keeps the time" },

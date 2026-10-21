@@ -52,23 +52,26 @@ export const CountdownPanel: Component<PanelProps> = (props) => {
 
   return (
     <>
-      <section class="card flex flex-col items-center gap-3 py-6">
+      {/* time and seconds side by side, so the whole timer fits on one screen */}
+      <section class="card flex flex-col gap-1">
         <span class="label">Counts down from</span>
-        <span class="numeral text-[88px]">{valid() ? formatClock(seconds()) : "–:––"}</span>
-        <label class="flex items-center gap-2">
-          <input
-            type="number"
-            inputmode="numeric"
-            min="1"
-            max={MAX_SECONDS}
-            aria-label="Seconds"
-            value={seconds()}
-            onInput={(e) => setSeconds(e.currentTarget.valueAsNumber)}
-            onChange={(e) => setDuration(e.currentTarget.valueAsNumber)}
-            class="input w-28 text-center tabular-nums"
-          />
-          <span class="text-[15px] text-muted">seconds</span>
-        </label>
+        <div class="flex items-center justify-between gap-3">
+          <span class="numeral text-[56px]">{valid() ? formatClock(seconds()) : "–:––"}</span>
+          <label class="flex shrink-0 items-center gap-2">
+            <input
+              type="number"
+              inputmode="numeric"
+              min="1"
+              max={MAX_SECONDS}
+              aria-label="Seconds"
+              value={seconds()}
+              onInput={(e) => setSeconds(e.currentTarget.valueAsNumber)}
+              onChange={(e) => setDuration(e.currentTarget.valueAsNumber)}
+              class="input w-20 px-2 text-center tabular-nums"
+            />
+            <span class="text-[15px] text-muted">seconds</span>
+          </label>
+        </div>
       </section>
 
       <Section title="Quick">
