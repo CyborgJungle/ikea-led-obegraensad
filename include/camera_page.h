@@ -72,6 +72,8 @@ const video = $("video"), sample = $("sample").getContext("2d", { willReadFreque
 const preview = $("preview").getContext("2d");
 const frame = new Uint8Array(SIZE * SIZE);
 let stream = null, socket = null, facing = "environment", inverted = false, timer = null, wakeLock = null;
+// streaming stopped because the page was hidden (phone locked, app switched)
+let resumeWhenVisible = false;
 
 $("back").href = "http://" + location.hostname + "/";
 
@@ -166,7 +168,10 @@ function sendFrame() {
   if (socket && socket.readyState === 1 && socket.bufferedAmount < 1024) socket.send(frame);
 }
 
-$("toggle").onclick = () => (stream ? stop() : start());
+$("toggle").onclick = () => {
+  resumeWhenVisible = false;
+  stream ? stop() : start();
+};
 $("flip").onclick = async () => {
   facing = facing === "environment" ? "user" : "environment";
   $("flip").textContent = facing === "user" ? "Back camera" : "Front camera";
@@ -181,7 +186,15 @@ $("invert").onclick = () => {
   inverted = !inverted;
   $("invert").setAttribute("aria-pressed", inverted);
 };
-document.addEventListener("visibilitychange", () => { if (document.hidden && stream) stop(); });
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden && stream) {
+    stop();
+    resumeWhenVisible = true;
+  } else if (!document.hidden && resumeWhenVisible) {
+    resumeWhenVisible = false;
+    start();
+  }
+});
 </script>
 </body>
 </html>

@@ -36,6 +36,22 @@ constexpr unsigned long CLOCK_TIMEOUT = 20000;
 // Apple accepts at most 825 days for certificates from a user installed authority
 constexpr long SERVER_CERT_DAYS = 800;
 
+// every TLS connection holds ~40 KB of heap: a page and a stream, plus one spare
+// so a phone can reconnect before its dead connections are closed
+constexpr size_t MAX_CONNECTIONS = 3;
+// a streaming phone sends 15 frames a second; silence means it locked or left
+// without closing the connection, which would keep a slot and its memory
+constexpr unsigned long IDLE_TIMEOUT = 5000;
+constexpr unsigned long IDLE_CHECK_INTERVAL = 1000;
+
+struct Session
+{
+  int fd;
+  unsigned long lastSeen;
+};
+// only touched from the HTTPS server task
+Session sessions[MAX_CONNECTIONS];
+
 struct Random
 {
   mbedtls_entropy_context entropy;
@@ -270,8 +286,83 @@ bool issueServerCertificate()
   return !serverCertificate.empty() && !serverKey.empty();
 }
 
+// refresh: the client did something now; otherwise only start tracking an unknown connection
+void track(int fd, bool refresh)
+{
+  Session *free = nullptr;
+  for (Session &session : sessions)
+  {
+    if (session.fd == fd)
+    {
+      if (refresh)
+      {
+        session.lastSeen = millis();
+      }
+      return;
+    }
+    if (session.fd <= 0 && !free)
+    {
+      free = &session;
+    }
+  }
+  if (free)
+  {
+    *free = {fd, millis()};
+  }
+}
+
+void markActive(int fd)
+{
+  track(fd, true);
+}
+
+// runs in the server task (httpd_queue_work), like the handlers
+void closeIdleSessions(void *)
+{
+  size_t count = MAX_CONNECTIONS;
+  int open[MAX_CONNECTIONS];
+  if (httpd_get_client_list(httpsServer, &count, open) != ESP_OK)
+  {
+    return;
+  }
+
+  // forget closed connections
+  for (Session &session : sessions)
+  {
+    bool stillOpen = false;
+    for (size_t i = 0; i < count; i++)
+    {
+      stillOpen = stillOpen || open[i] == session.fd;
+    }
+    if (!stillOpen)
+    {
+      session.fd = -1;
+    }
+  }
+
+  // a connection without a request yet gets its grace period from now
+  for (size_t i = 0; i < count; i++)
+  {
+    track(open[i], false);
+  }
+
+  const unsigned long now = millis();
+  for (size_t i = 0; i < count; i++)
+  {
+    for (Session &session : sessions)
+    {
+      if (session.fd == open[i] && now - session.lastSeen > IDLE_TIMEOUT)
+      {
+        httpd_sess_trigger_close(httpsServer, session.fd);
+        session.fd = -1;
+      }
+    }
+  }
+}
+
 esp_err_t handleCameraPage(httpd_req_t *request)
 {
+  markActive(httpd_req_to_sockfd(request));
   httpd_resp_set_type(request, "text/html");
   httpd_resp_set_hdr(request, "Cache-Control", "no-cache");
   return httpd_resp_send(request, CAMERA_PAGE, HTTPD_RESP_USE_STRLEN);
@@ -279,6 +370,7 @@ esp_err_t handleCameraPage(httpd_req_t *request)
 
 esp_err_t handleRoot(httpd_req_t *request)
 {
+  markActive(httpd_req_to_sockfd(request));
   httpd_resp_set_status(request, "302 Found");
   httpd_resp_set_hdr(request, "Location", "/camera");
   return httpd_resp_send(request, nullptr, 0);
@@ -287,6 +379,7 @@ esp_err_t handleRoot(httpd_req_t *request)
 // binary: one 16x16 grayscale frame; text "start": switch to the Camera mode
 esp_err_t handleCameraSocket(httpd_req_t *request)
 {
+  markActive(httpd_req_to_sockfd(request));
   if (request->method == HTTP_GET)
   {
     return ESP_OK; // handshake
@@ -332,8 +425,7 @@ void startHttpsServer()
   config.servercert_len = serverCertificate.size();
   config.prvtkey_pem = serverKey.data();
   config.prvtkey_len = serverKey.size();
-  // every TLS connection holds ~40 KB of heap
-  config.httpd.max_open_sockets = 2;
+  config.httpd.max_open_sockets = MAX_CONNECTIONS;
   config.httpd.lru_purge_enable = true;
 
   if (httpd_ssl_start(&httpsServer, &config) != ESP_OK)
@@ -341,6 +433,10 @@ void startHttpsServer()
     Serial.println("[Secure] Could not start the HTTPS server");
     httpsServer = nullptr;
     return;
+  }
+  for (Session &session : sessions)
+  {
+    session.fd = -1;
   }
 
   const httpd_uri_t root = {.uri = "/", .method = HTTP_GET, .handler = handleRoot};
@@ -364,6 +460,13 @@ void initSecureServer()
 
 void secureServerLoop()
 {
+  static unsigned long lastIdleCheck = 0;
+  if (httpsServer && millis() - lastIdleCheck >= IDLE_CHECK_INTERVAL)
+  {
+    lastIdleCheck = millis();
+    httpd_queue_work(httpsServer, closeIdleSessions, nullptr);
+  }
+
   if (startAttempted || caKey.empty() || WiFi.status() != WL_CONNECTED)
   {
     return;
