@@ -17,6 +17,39 @@ void drawCentered(const PixelFont &font, const String &text, int y)
   TextRender::draw(font, line, (COLS - TextRender::width(font, line)) / 2, y);
 }
 
+// digits share their rows, so centring the first one's rows centres the number;
+// the line box also holds the space for descenders, which would push it up
+int digitsTop(const PixelFont &font, const String &text)
+{
+  const PixelGlyph *first = TextRender::decode(font, text)[0][0];
+  return (ROWS - first->height) / 2 - first->y;
+}
+
+// one digit at twice its size: the large font's digits are 7 px wide and cannot
+// sit in the middle of 16 columns, the small font's doubled are 8 by 12
+void drawDoubledDigit(int digit)
+{
+  const PixelGlyph *glyph = TextRender::decode(fontSmall, String(digit))[0][0];
+  const int left = (COLS - glyph->width * 2) / 2;
+  const int top = (ROWS - glyph->height * 2) / 2;
+  for (int row = 0; row < glyph->height; row++)
+  {
+    const uint8_t bits = fontSmall.data[glyph->offset + row];
+    for (int column = 0; column < glyph->width; column++)
+    {
+      if (bits & (0x80 >> column))
+      {
+        const int x = left + column * 2;
+        const int y = top + row * 2;
+        Screen.setPixel(x, y, 1);
+        Screen.setPixel(x + 1, y, 1);
+        Screen.setPixel(x, y + 1, 1);
+        Screen.setPixel(x + 1, y + 1, 1);
+      }
+    }
+  }
+}
+
 String twoDigits(int value)
 {
   return value < 10 ? "0" + String(value) : String(value);
@@ -50,10 +83,17 @@ void CountdownPlugin::drawRemaining(int seconds)
 {
   Screen.clear();
 
+  // the last seconds: one big digit in the middle
+  if (seconds < 10)
+  {
+    drawDoubledDigit(seconds);
+    return;
+  }
+
   // up to 99 seconds: big digits
   if (seconds < 100)
   {
-    drawCentered(fontLarge, String(seconds), 0);
+    drawCentered(fontLarge, String(seconds), digitsTop(fontLarge, String(seconds)));
     return;
   }
 
