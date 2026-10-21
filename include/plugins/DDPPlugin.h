@@ -10,7 +10,7 @@ class DDPPlugin : public Plugin
 {
 private:
 #ifdef ASYNC_UDP_ENABLED
-  AsyncUDP *udp;
+  AsyncUDP *udp = nullptr;
 #endif
 
 public:

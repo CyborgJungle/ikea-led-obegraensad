@@ -15,6 +15,8 @@ void ArtNetPlugin::setup()
 
 void ArtNetPlugin::teardown()
 {
+  // free the UDP port, setup() opens it again
+  artnet.stop();
 }
 
 void ArtNetPlugin::loop()
@@ -29,13 +31,14 @@ const char *ArtNetPlugin::getName() const
 
 void ArtNetPlugin::onDmxFrame(uint16_t universe, uint16_t length, uint16_t outgoing, uint8_t *data)
 {
-  Serial.print("Universe: ");
-  Serial.println(universe);
   if (universe == 0 || universe == outgoing)
   {
+    // the length comes from the packet: never read past the DMX data it carried
+    const int channels = std::min<int>(length, MAX_BUFFER_ARTNET - ART_DMX_START);
     for (int i = 0; i < ROWS * COLS; i++)
     {
-      Screen.setPixelAtIndex(i, data[i] > 4, data[i]);
+      const uint8_t value = i < channels ? data[i] : 0;
+      Screen.setPixelAtIndex(i, value > 4, value);
     }
   }
 }

@@ -431,7 +431,7 @@ void loop()
 #endif
 
 #ifdef ENABLE_SERVER
-  ElegantOTA.loop();
+  otaLoop();
 #ifdef ESP32
   secureServerLoop();
 #endif
