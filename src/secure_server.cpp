@@ -29,16 +29,23 @@ Bytes caKey;
 Bytes serverCertificate;
 Bytes serverKey;
 httpd_handle_t httpsServer = nullptr;
+// address the running server's certificate was issued for
+uint32_t certificateIp = 0;
+unsigned long lastStartAttempt = 0;
 bool startAttempted = false;
 
 // wait this long for the clock before issuing the certificate with the build date
 constexpr unsigned long CLOCK_TIMEOUT = 20000;
+// a failed start (no memory, WiFi gone mid-way) is tried again after this
+constexpr unsigned long RETRY_INTERVAL = 30000;
 // Apple accepts at most 825 days for certificates from a user installed authority
 constexpr long SERVER_CERT_DAYS = 800;
 
-// every TLS connection holds ~40 KB of heap: a page and a stream, plus one spare
-// so a phone can reconnect before its dead connections are closed
-constexpr size_t MAX_CONNECTIONS = 3;
+// every TLS connection holds ~40 KB of heap and setting one up briefly needs
+// more; three plus a handshake ran the heap down to a few hundred bytes. The
+// page connection closes after sending, so a stream needs one; a reconnecting
+// phone gets the second, the least recently used one is dropped beyond that.
+constexpr size_t MAX_CONNECTIONS = 2;
 // a streaming phone sends 15 frames a second; silence means it locked or left
 // without closing the connection, which would keep a slot and its memory
 constexpr unsigned long IDLE_TIMEOUT = 5000;
@@ -365,7 +372,11 @@ esp_err_t handleCameraPage(httpd_req_t *request)
   markActive(httpd_req_to_sockfd(request));
   httpd_resp_set_type(request, "text/html");
   httpd_resp_set_hdr(request, "Cache-Control", "no-cache");
-  return httpd_resp_send(request, CAMERA_PAGE, HTTPD_RESP_USE_STRLEN);
+  // the page opens its own websocket connection, this one would only hold memory
+  httpd_resp_set_hdr(request, "Connection", "close");
+  const esp_err_t result = httpd_resp_send(request, CAMERA_PAGE, HTTPD_RESP_USE_STRLEN);
+  httpd_sess_trigger_close(request->handle, httpd_req_to_sockfd(request));
+  return result;
 }
 
 // Safari tries https:// first for every http:// link (iOS 18.2+) and only falls
@@ -427,6 +438,8 @@ void startHttpsServer()
   config.prvtkey_len = serverKey.size();
   config.httpd.max_open_sockets = MAX_CONNECTIONS;
   config.httpd.lru_purge_enable = true;
+  // TLS handshakes take ~0.5 s of CPU; keep them off core 0, where the screen is drawn
+  config.httpd.core_id = 1;
 
   if (httpd_ssl_start(&httpsServer, &config) != ESP_OK)
   {
@@ -434,6 +447,7 @@ void startHttpsServer()
     httpsServer = nullptr;
     return;
   }
+  certificateIp = WiFi.localIP();
   for (Session &session : sessions)
   {
     session.fd = -1;
@@ -466,7 +480,21 @@ void secureServerLoop()
     httpd_queue_work(httpsServer, closeIdleSessions, nullptr);
   }
 
-  if (startAttempted || caKey.empty() || WiFi.status() != WL_CONNECTED)
+  if (caKey.empty() || WiFi.status() != WL_CONNECTED)
+  {
+    return;
+  }
+
+  // a new address from the router: the certificate no longer covers the IP
+  if (httpsServer && (uint32_t)WiFi.localIP() != certificateIp)
+  {
+    Serial.println("[Secure] IP address changed, restarting the HTTPS server");
+    httpd_ssl_stop(httpsServer);
+    httpsServer = nullptr;
+    startAttempted = false;
+  }
+
+  if (httpsServer || (startAttempted && millis() - lastStartAttempt < RETRY_INTERVAL))
   {
     return;
   }
@@ -476,6 +504,7 @@ void secureServerLoop()
     return;
   }
   startAttempted = true;
+  lastStartAttempt = millis();
   startHttpsServer();
 }
 

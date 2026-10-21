@@ -319,6 +319,11 @@ void handleGetInfo(AsyncWebServerRequest *request)
   jsonDocument["rssi"] = WiFi.RSSI();
   jsonDocument["uptime"] = millis() / 1000;
   jsonDocument["freeHeap"] = ESP.getFreeHeap();
+#ifdef ESP32
+  // lowest point since boot and the largest block a TLS connection could get
+  jsonDocument["minFreeHeap"] = ESP.getMinFreeHeap();
+  jsonDocument["maxAllocHeap"] = ESP.getMaxAllocHeap();
+#endif
   jsonDocument["ipAddress"] = WiFi.localIP().toString();
   jsonDocument["macAddress"] = WiFi.macAddress();
   jsonDocument["resetReason"] = getResetReason();
