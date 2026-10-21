@@ -1,5 +1,8 @@
 #include "scheduler.h"
 #include "websocket.h"
+#include "brightness_schedule.h"
+#include "config.h"
+#include "timing.h"
 
 PluginScheduler &PluginScheduler::getInstance()
 {
@@ -76,9 +79,54 @@ void PluginScheduler::checkAndPersist()
 #endif
 }
 
+// Starts the schedule when the active hours begin and stops it (back to the
+// default mode) when they end. Only the change acts, so a start or stop by hand
+// holds until the next boundary.
+void PluginScheduler::updateActiveHours()
+{
+  if (millis() - lastHoursCheck < 1000)
+  {
+    return;
+  }
+  lastHoursCheck = millis();
+
+  uint16_t from, to;
+  struct tm now;
+  if (!config.getScheduleHoursEnabled() || schedule.empty() ||
+      !BrightnessSchedule::parseTime(config.getScheduleFrom(), from) ||
+      !BrightnessSchedule::parseTime(config.getScheduleTo(), to) || !getSyncedLocalTime(now))
+  {
+    insideHours = -1;
+    return;
+  }
+
+  const uint16_t minute = now.tm_hour * 60 + now.tm_min;
+  // a window like 22:00-07:00 runs over midnight
+  const bool inside = from < to ? minute >= from && minute < to : minute >= from || minute < to;
+  if (insideHours == (inside ? 1 : 0))
+  {
+    return;
+  }
+  insideHours = inside ? 1 : 0;
+
+  if (inside && !isActive)
+  {
+    start();
+  }
+  else if (!inside && isActive)
+  {
+    stop();
+    pluginManager.activatePersistedPlugin();
+#ifdef ENABLE_SERVER
+    sendInfo();
+#endif
+  }
+}
+
 void PluginScheduler::update()
 {
   checkAndPersist();
+  updateActiveHours();
 
   if (!isActive || schedule.empty())
     return;

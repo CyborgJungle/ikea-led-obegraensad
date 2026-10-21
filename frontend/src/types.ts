@@ -24,6 +24,7 @@ export interface StoreActions {
   setRotation: (rotation: number) => void;
   setPlugins: (plugins: []) => void;
   setPlugin: (plugin: number) => void;
+  setPersistedPlugin: (plugin: number) => void;
   setBaseBrightness: (brightness: number) => void;
   setBrightness: (brightness: number) => void;
   setBrightnessSchedule: (schedule: BrightnessSchedule) => void;
@@ -47,6 +48,8 @@ export interface Store {
   leds: number[];
   plugins: { id: number; name: string }[];
   plugin: number;
+  // the mode the lamp starts with
+  persistedPlugin: number;
   artnetUniverse: number;
   GOLDelay: number;
   systemStatus: SYSTEM_STATUS;

@@ -1,5 +1,6 @@
 #include "config.h"
 #include <ArduinoJson.h>
+#include "brightness_schedule.h"
 
 Config config;
 
@@ -75,6 +76,9 @@ void Config::setDefaults()
   boardText = "Menu\nCoffee 3\nTea 2,50";
   boardSpeed = 120;
   countdownSeconds = 60;
+  scheduleHoursEnabled = false;
+  scheduleFrom = "08:00";
+  scheduleTo = "23:00";
   textVersion++;
 }
 
@@ -98,6 +102,9 @@ void Config::load()
     setBoardText(preferences.getString("boardText", boardText));
     setBoardSpeed(preferences.getUShort("boardSpeed", boardSpeed));
     countdownSeconds = constrain(preferences.getUShort("countdown", countdownSeconds), 1, COUNTDOWN_MAX_SECONDS);
+    setScheduleHours(preferences.getBool("schedHours", scheduleHoursEnabled),
+                     preferences.getString("schedFrom", scheduleFrom),
+                     preferences.getString("schedTo", scheduleTo));
     
     Serial.println("[Config] Configuration loaded from storage");
   } catch (...) {
@@ -126,6 +133,9 @@ void Config::save()
     preferences.putString("boardText", boardText);
     preferences.putUShort("boardSpeed", boardSpeed);
     preferences.putUShort("countdown", countdownSeconds);
+    preferences.putBool("schedHours", scheduleHoursEnabled);
+    preferences.putString("schedFrom", scheduleFrom);
+    preferences.putString("schedTo", scheduleTo);
     
     Serial.println("[Config] Configuration saved");
   } catch (...) {
@@ -261,6 +271,19 @@ void Config::resetCountdown()
   countdownReset++;
 }
 
+// ignored when a time is malformed or both are the same (an empty window)
+void Config::setScheduleHours(bool enabled, const String& from, const String& to)
+{
+  uint16_t fromMinute, toMinute;
+  if (!BrightnessSchedule::parseTime(from, fromMinute) ||
+      !BrightnessSchedule::parseTime(to, toMinute) || fromMinute == toMinute) {
+    return;
+  }
+  scheduleHoursEnabled = enabled;
+  scheduleFrom = from;
+  scheduleTo = to;
+}
+
 
 String Config::toJson() const
 {
@@ -275,6 +298,9 @@ String Config::toJson() const
   doc["boardText"] = boardText;
   doc["boardSpeed"] = boardSpeed;
   doc["countdownSeconds"] = countdownSeconds;
+  doc["scheduleHoursEnabled"] = scheduleHoursEnabled;
+  doc["scheduleFrom"] = scheduleFrom;
+  doc["scheduleTo"] = scheduleTo;
   
   String output;
   serializeJson(doc, output);
@@ -347,6 +373,13 @@ bool Config::fromJson(const String& json)
   // duration first, so {"countdownSeconds": 30, "countdownStart": true} starts 30 s
   if (doc["countdownSeconds"].is<int>()) {
     setCountdownSeconds(doc["countdownSeconds"].as<int>());
+  }
+
+  if (doc["scheduleHoursEnabled"].is<bool>() || doc["scheduleFrom"].is<String>() ||
+      doc["scheduleTo"].is<String>()) {
+    setScheduleHours(doc["scheduleHoursEnabled"] | scheduleHoursEnabled,
+                     doc["scheduleFrom"] | scheduleFrom,
+                     doc["scheduleTo"] | scheduleTo);
   }
 
   if (doc["countdownStart"] | false) {

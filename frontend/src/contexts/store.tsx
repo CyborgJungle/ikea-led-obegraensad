@@ -49,6 +49,7 @@ const [mainStore, setStore] = createStore<Store>({
   rotation: 0,
   plugins: [],
   plugin: 1,
+  persistedPlugin: 1,
   baseBrightness: 0,
   brightness: 0,
   brightnessSchedule: {
@@ -74,6 +75,7 @@ const actions: StoreActions = {
   setRotation: (rotation) => setStore("rotation", rotation),
   setPlugins: (plugins) => setStore("plugins", plugins),
   setPlugin: (plugin) => setStore("plugin", plugin),
+  setPersistedPlugin: (plugin) => setStore("persistedPlugin", plugin),
   setBaseBrightness: (brightness) => setStore("baseBrightness", brightness),
   setBrightness: (brightness) => setStore("brightness", brightness),
   setBrightnessSchedule: (schedule) => setStore("brightnessSchedule", schedule),
@@ -203,6 +205,10 @@ export const StoreProvider = (props?: { value?: Store; children?: JSX.Element })
 
             if (isValidNumber(json.plugin)) {
               actions.setPlugin(json.plugin);
+            }
+
+            if (isValidNumber(json["persist-plugin"])) {
+              actions.setPersistedPlugin(json["persist-plugin"]);
             }
 
             if (mainStore.plugin === 1) {

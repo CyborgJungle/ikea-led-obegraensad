@@ -31,6 +31,10 @@ private:
   uint16_t countdownSeconds;
   // bumped on every start, also with the same duration, to (re)start it
   volatile uint32_t countdownRun;
+  // the plugin schedule runs only between these times ("HH:MM") when enabled
+  bool scheduleHoursEnabled;
+  String scheduleFrom;
+  String scheduleTo;
   // bumped on a new duration or a reset: the countdown shows it and waits
   volatile uint32_t countdownReset;
   bool initialized;
@@ -64,6 +68,9 @@ public:
   uint16_t getCountdownSeconds() const { return countdownSeconds; }
   uint32_t getCountdownRun() const { return countdownRun; }
   uint32_t getCountdownReset() const { return countdownReset; }
+  bool getScheduleHoursEnabled() const { return scheduleHoursEnabled; }
+  String getScheduleFrom() const { return scheduleFrom; }
+  String getScheduleTo() const { return scheduleTo; }
   bool isInitialized() const { return initialized; }
   
   // Setters with validation
@@ -80,6 +87,7 @@ public:
   void setCountdownSeconds(int seconds);
   void startCountdown();
   void resetCountdown();
+  void setScheduleHours(bool enabled, const String& from, const String& to);
 
   static constexpr size_t SCROLL_TEXT_MAX_LENGTH = 200;
   static constexpr uint16_t SCROLL_SPEED_MIN = 20;  // ms per pixel

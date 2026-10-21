@@ -1,228 +1,285 @@
 @import "tailwindcss";
-@plugin "tailwindcss-animate";
 
-@theme {
-  --font-sans:
-    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-
-  --color-canvas: #0b0b0d;
-  --color-surface: #141417;
-  --color-raised: #1d1d22;
-  --color-hover: #26262c;
-  --color-line: rgb(255 255 255 / 0.08);
-  --color-fg: #ededf0;
-  --color-muted: #8e8e98;
-  --color-accent: #ffb547;
-  --color-accent-fg: #1a1205;
-  --color-danger: #fca5a5;
-  --color-success: #6ee7b7;
+/* Colour tokens: light by default, dark via [data-theme="dark"] (see lib/theme.ts) */
+:root {
+  --c-ground: #ece8e1;
+  --c-card: #f7f5f1;
+  --c-raised: #e2ddd4;
+  --c-ink: #151514;
+  --c-muted: #6b665f;
+  --c-faint: #8a847b;
+  --c-line: #d6d0c6;
+  --c-signal: #e8622c;
+  --c-on-signal: #151514;
+  --c-cream: #e8d8c9;
+  --c-slate: #4b607f;
+  --c-on-slate: #f7f5f1;
+  --c-inverse: #151514;
+  --c-on-inverse: #ece8e1;
+  --c-danger: #b42318;
+  color-scheme: light;
 }
 
-/* tokens above are the dark theme; light theme follows the OS setting */
-@media (prefers-color-scheme: light) {
-  :root {
-    --color-canvas: #f3f3f5;
-    --color-surface: #ffffff;
-    --color-raised: #ececef;
-    --color-hover: #e2e2e7;
-    --color-line: rgb(0 0 0 / 0.09);
-    --color-fg: #18181b;
-    --color-muted: #6b6b76;
-    --color-accent: #f5a524;
-    --color-danger: #dc2626;
-    --color-success: #047857;
-  }
+:root[data-theme="dark"] {
+  --c-ground: #121211;
+  --c-card: #1c1b1a;
+  --c-raised: #272624;
+  --c-ink: #ece8e1;
+  --c-muted: #a39d94;
+  --c-faint: #7c766e;
+  --c-line: #302e2b;
+  --c-signal: #ee6a33;
+  --c-on-signal: #151514;
+  --c-cream: #d9cbbb;
+  --c-slate: #4b607f;
+  --c-on-slate: #f7f5f1;
+  --c-inverse: #ece8e1;
+  --c-on-inverse: #151514;
+  --c-danger: #ff8a7a;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --font-sans:
+    -apple-system, "SF Pro Display", "Inter Tight", system-ui, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "IBM Plex Mono", Menlo, monospace;
+
+  --color-ground: var(--c-ground);
+  --color-card: var(--c-card);
+  --color-raised: var(--c-raised);
+  --color-ink: var(--c-ink);
+  --color-muted: var(--c-muted);
+  --color-faint: var(--c-faint);
+  --color-line: var(--c-line);
+  --color-signal: var(--c-signal);
+  --color-on-signal: var(--c-on-signal);
+  --color-cream: var(--c-cream);
+  --color-slate: var(--c-slate);
+  --color-on-slate: var(--c-on-slate);
+  --color-inverse: var(--c-inverse);
+  --color-on-inverse: var(--c-on-inverse);
+  --color-danger: var(--c-danger);
+  /* used by the LED preview */
+  --color-accent: var(--c-signal);
 }
 
 @layer base {
-  * {
-    box-sizing: border-box;
-  }
-
   html,
   body,
   #app {
-    @apply h-full w-full m-0 p-0;
-    height: 100vh;
-    height: 100dvh;
+    height: 100%;
+    margin: 0;
   }
 
-  /* keep the app fixed to the phone screen: no double-tap zoom (tapping the
-     matrix), no text resizing on rotation, no rubber-band scrolling of the page */
+  /* a native app feel on iPhone: no double-tap zoom, no text resizing,
+     no rubber banding of the whole page, no grey tap flashes */
   html {
     touch-action: manipulation;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
   }
 
   body {
+    @apply bg-ground font-sans text-ink antialiased;
     overscroll-behavior: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
   }
 
-  @supports (padding: max(0px)) {
-    body {
-      padding-left: env(safe-area-inset-left);
-      padding-right: env(safe-area-inset-right);
-    }
-  }
-
-  body {
-    @apply font-sans text-base font-normal text-fg bg-canvas antialiased;
-    background-image:
-      radial-gradient(60rem 40rem at 70% -10%, rgb(255 181 71 / 0.07), transparent 60%),
-      radial-gradient(40rem 30rem at -10% 110%, rgb(120 120 255 / 0.05), transparent 60%);
-    background-attachment: fixed;
-    color-scheme: light dark;
-    font-synthesis: none;
-    text-rendering: optimizeLegibility;
-  }
-
-  :focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 2px;
-  }
-
+  input,
+  textarea,
   select {
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238e8e98' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 0.85rem center;
-    padding-right: 2.25rem !important;
+    -webkit-user-select: text;
+    user-select: text;
   }
 
-  option {
-    background: var(--color-raised);
-  }
-
-  input[type="range"] {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 100%;
-    height: 6px;
-    background: var(--color-raised);
-    border-radius: 9999px;
-    outline-offset: 6px;
+  button {
     cursor: pointer;
   }
 
+  button:disabled {
+    cursor: default;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--c-signal);
+    outline-offset: 2px;
+  }
+
+  input[type="range"] {
+    @apply h-11 w-full cursor-pointer appearance-none bg-transparent;
+  }
+  input[type="range"]::-webkit-slider-runnable-track {
+    @apply h-2.5 rounded-full;
+    background:
+      linear-gradient(var(--c-signal), var(--c-signal)) 0 / var(--fill, 50%) 100% no-repeat,
+      var(--c-line);
+  }
   input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 18px;
-    height: 18px;
-    background: var(--color-fg);
-    border-radius: 50%;
-    box-shadow: 0 0 0 4px rgb(255 181 71 / 0.25);
-    transition: box-shadow 0.15s;
+    @apply -mt-[9px] size-7 appearance-none rounded-full border-0 bg-ink;
   }
-
-  input[type="range"]:active::-webkit-slider-thumb {
-    box-shadow: 0 0 0 6px rgb(255 181 71 / 0.35);
-  }
-
   input[type="range"]::-moz-range-track {
-    height: 6px;
-    background: var(--color-raised);
-    border-radius: 9999px;
+    @apply h-2.5 rounded-full bg-line;
   }
-
+  input[type="range"]::-moz-range-progress {
+    @apply h-2.5 rounded-full bg-signal;
+  }
   input[type="range"]::-moz-range-thumb {
-    width: 18px;
-    height: 18px;
-    background: var(--color-fg);
-    border: none;
-    border-radius: 50%;
-    box-shadow: 0 0 0 4px rgb(255 181 71 / 0.25);
+    @apply size-7 rounded-full border-0 bg-ink;
   }
 }
 
 @layer components {
+  /* a full screen page: scrolls itself, clears the notch and the home bar */
+  .page {
+    @apply mx-auto flex h-dvh w-full max-w-[480px] flex-col gap-5 overflow-y-auto px-5;
+    padding-top: max(1.25rem, env(safe-area-inset-top));
+    padding-bottom: calc(6.5rem + env(safe-area-inset-bottom));
+    overscroll-behavior: contain;
+  }
+
+  /* a page taller than the screen scrolls; its parts keep their size */
+  .page > * {
+    flex-shrink: 0;
+  }
+
+  .page-full {
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+  }
+
+  .title {
+    @apply m-0 text-[32px] leading-[0.95] font-bold tracking-[-0.03em];
+  }
+
+  .title-sub {
+    @apply block text-faint;
+  }
+
+  .label {
+    @apply m-0 font-mono text-[11px] font-medium tracking-[0.08em] text-muted uppercase;
+  }
+
+  .numeral {
+    @apply leading-none font-light tracking-[-0.05em] tabular-nums;
+  }
+
   .card {
-    @apply bg-surface/90 border border-line rounded-2xl shadow-xl shadow-black/30 backdrop-blur;
+    @apply rounded-[24px] bg-card p-4;
   }
 
-  @media (prefers-color-scheme: light) {
-    .card {
-      @apply shadow-black/5;
-    }
+  /* the big rounded colour bar of the mode picker, used for headlines */
+  .bar {
+    @apply flex min-h-[84px] items-center justify-between gap-3 rounded-[24px] px-5 text-left no-underline transition active:scale-[0.99];
   }
 
-  .section-title {
-    @apply text-[11px] font-semibold uppercase tracking-[0.12em] text-muted;
+  .bar-name {
+    @apply text-[40px] leading-none font-extrabold tracking-[-0.045em];
   }
 
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-line bg-raised px-3.5 py-2.5 text-sm font-medium text-fg cursor-pointer select-none transition hover:bg-hover active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none;
+    @apply inline-flex h-12 items-center justify-center gap-2 rounded-full px-5 text-[15px] font-semibold transition active:scale-[0.97] disabled:opacity-40;
   }
 
-  .btn-primary {
-    @apply bg-fg text-canvas border-transparent hover:bg-fg/85;
+  .btn-ink {
+    @apply bg-inverse text-on-inverse;
   }
 
-  .btn-accent {
-    @apply bg-accent text-accent-fg border-transparent hover:bg-accent/90;
+  .btn-signal {
+    @apply bg-signal text-on-signal;
   }
 
-  .btn-danger {
-    @apply hover:bg-danger/15 hover:text-danger hover:border-danger/30;
+  .btn-line {
+    @apply border border-line bg-transparent text-ink;
   }
 
-  .btn-ghost {
-    @apply bg-transparent border-transparent text-muted hover:text-fg hover:bg-raised;
+  .btn-quiet {
+    @apply bg-raised text-ink;
   }
 
-  .btn-icon {
-    @apply size-10 p-0 shrink-0;
+  .disc {
+    @apply inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-line bg-transparent text-ink transition active:scale-95;
   }
 
   .input {
-    @apply w-full rounded-xl border border-line bg-raised px-3 py-2.5 text-base sm:text-sm text-fg outline-none transition focus:border-accent/60 focus:ring-2 focus:ring-accent/20;
+    @apply h-12 w-full rounded-2xl border border-transparent bg-raised px-4 text-base text-ink outline-none placeholder:text-faint focus:border-signal;
   }
 
-  .segmented {
-    @apply inline-flex rounded-xl border border-line bg-surface p-1 text-sm;
+  textarea.input {
+    @apply h-auto resize-none py-3;
   }
 
-  .segmented > button {
-    @apply rounded-lg px-3 py-1.5 font-medium text-muted transition hover:text-fg cursor-pointer;
+  /* segmented control: a black pill with the chosen option lifted out */
+  .seg {
+    @apply grid gap-1 rounded-full bg-inverse p-1;
   }
 
-  .segmented > button[aria-pressed="true"] {
-    @apply bg-raised text-fg shadow;
+  .seg > button {
+    @apply h-10 rounded-full px-3 text-sm font-semibold text-on-inverse transition;
+  }
+
+  .seg > button[aria-pressed="true"] {
+    @apply bg-ground text-ink;
   }
 
   .switch {
-    @apply relative h-5 w-9 shrink-0 cursor-pointer appearance-none rounded-full bg-raised border border-line transition;
+    @apply relative h-8 w-[52px] shrink-0 cursor-pointer appearance-none rounded-full bg-line transition;
   }
 
-  .switch::before {
-    @apply absolute top-0.5 left-0.5 size-3.5 rounded-full bg-muted transition content-[''];
+  .switch::after {
+    @apply absolute top-1 left-1 size-6 rounded-full bg-card shadow transition-transform content-[''];
   }
 
   .switch:checked {
-    @apply bg-accent border-transparent;
+    @apply bg-signal;
   }
 
-  .switch:checked::before {
-    @apply translate-x-4 bg-accent-fg;
+  .switch:checked::after {
+    @apply translate-x-5;
   }
 
-  .kbd {
-    @apply rounded-md border border-line bg-raised px-1.5 py-0.5 font-mono text-[11px] text-fg;
+  .row {
+    @apply flex min-h-12 items-center justify-between gap-4;
   }
 }
 
-@keyframes toastSlideUp {
-  0% {
+@keyframes page-in {
+  from {
     opacity: 0;
-    transform: translate(-50%, 1rem);
-  }
-  100% {
-    opacity: 1;
-    transform: translate(-50%, 0);
+    transform: translateX(24px);
   }
 }
 
-.animate-toast-slide-up {
-  animation: toastSlideUp 0.2s ease-out forwards;
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 12px);
+  }
+}
+
+.animate-page-in {
+  animation: page-in 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+.animate-toast-in {
+  animation: toast-in 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-page-in,
+  .animate-fade-in,
+  .animate-toast-in {
+    animation: none;
+  }
 }
