@@ -38,6 +38,8 @@ interface DeviceInfo {
   rssi: number;
   uptime: number;
   freeHeap: number;
+  minFreeHeap?: number;
+  maxAllocHeap?: number;
   resetReason: string;
 }
 
@@ -225,6 +227,12 @@ const Settings: Component = () => {
       { label: "WiFi signal", value: `${signalLabel(device.rssi)} (${device.rssi} dBm)` },
       { label: "Uptime", value: formatUptime(device.uptime) },
       { label: "Free memory", value: `${Math.round(device.freeHeap / 1024)} KB` },
+      ...(device.minFreeHeap !== undefined
+        ? [{ label: "Lowest free memory", value: `${Math.round(device.minFreeHeap / 1024)} KB` }]
+        : []),
+      ...(device.maxAllocHeap !== undefined
+        ? [{ label: "Largest free block", value: `${Math.round(device.maxAllocHeap / 1024)} KB` }]
+        : []),
       { label: "Last reset", value: device.resetReason },
     ];
   };
