@@ -64,7 +64,11 @@ export const Home: Component = () => {
         }
       />
 
-      <LivePreview />
+      {/* the board takes the height that is left, so home fits on one screen;
+          the width keeps the 9:13 board (plus its 0.75rem frame) inside it */}
+      <div class="flex min-h-[200px] flex-1 items-center justify-center [container-type:size]">
+        <LivePreview class="w-[min(100cqw,calc((100cqh_-_1.5rem)*9/13_+_1.5rem))]" />
+      </div>
 
       <Section title="Now showing">
         <Show

@@ -30,7 +30,7 @@ const INFO: Record<string, { label?: string; group: ModeGroup; note: string }> =
   Rain: { group: "ambient", note: "Falling drops" },
   MatrixRain: { label: "Matrix", group: "ambient", note: "Digital rain" },
   Firework: { group: "ambient", note: "Bursts" },
-  Blob: { group: "ambient", note: "Morphing blob" },
+  Blobs: { group: "ambient", note: "Morphing blobs" },
   Spiral: { group: "ambient", note: "Spinning" },
   Wave: { group: "ambient", note: "Sine wave" },
   Checkerboard: { label: "Checker", group: "ambient", note: "Pattern" },
@@ -59,9 +59,13 @@ const INFO: Record<string, { label?: string; group: ModeGroup; note: string }> =
   ArtNet: { label: "Art-Net", group: "connect", note: "Lighting desks, port 6454" },
 };
 
+// the lamp names some plugins with spaces ("Meteor Shower", "Big Clock"),
+// others without ("GameOfLife"); the tables here use the name without spaces
+export const modeKey = (name: string) => name.replace(/\s+/g, "");
+
 // "MeteorShower" → "Meteor Shower" for plugins without a label above
 const split = (name: string) => name.replace(/([a-z])([A-Z])/g, "$1 $2");
 
-export const modeLabel = (name: string) => INFO[name]?.label ?? split(name);
-export const modeNote = (name: string) => INFO[name]?.note ?? "";
-export const modeGroup = (name: string): ModeGroup => INFO[name]?.group ?? "more";
+export const modeLabel = (name: string) => INFO[modeKey(name)]?.label ?? split(name);
+export const modeNote = (name: string) => INFO[modeKey(name)]?.note ?? "";
+export const modeGroup = (name: string): ModeGroup => INFO[modeKey(name)]?.group ?? "more";

@@ -56,17 +56,18 @@ export const ModePicker: Component = () => {
           {(group) => (
             <section class="flex flex-col gap-2.5" aria-label={group.label}>
               <h2 class="label px-1 text-[#a39d94]">{group.label}</h2>
-              <ul class="m-0 flex list-none flex-col gap-2.5 p-0">
+              <ul class="m-0 flex list-none flex-col gap-1.5 p-0">
                 <For each={group.modes}>
                   {(mode) => {
                     const current = () => mode.id === store.plugin && !store.isActiveScheduler;
                     return (
                       <li>
+                        {/* a compact bar: one line, so a whole group fits on screen */}
                         <button
                           type="button"
                           aria-current={current() ? "true" : undefined}
                           onClick={() => pick(mode.id)}
-                          class={`bar w-full border-0 ${
+                          class={`bar min-h-[42px] w-full rounded-[16px] border-0 px-4 ${
                             current()
                               ? "bg-[#e8622c] text-[#151514]"
                               : mode.tone === "cream"
@@ -74,14 +75,16 @@ export const ModePicker: Component = () => {
                                 : "bg-[#4b607f] text-[#f7f5f1]"
                           }`}
                         >
-                          <span class="bar-name truncate">{modeLabel(mode.name)}</span>
-                          <span class="flex shrink-0 flex-col items-end gap-1">
-                            <span class="font-mono text-[13px]">#{mode.id}</span>
-                            <span class="text-[12px]">
+                          <span class="shrink-0 text-[22px] leading-none font-extrabold tracking-[-0.035em]">
+                            {modeLabel(mode.name)}
+                          </span>
+                          <span class="flex min-w-0 shrink items-baseline gap-2 text-[12px]">
+                            <span class="truncate">
                               <Show when={current()} fallback={modeNote(mode.name)}>
                                 ● Showing now
                               </Show>
                             </span>
+                            <span class="shrink-0 font-mono opacity-70">#{mode.id}</span>
                           </span>
                         </button>
                       </li>

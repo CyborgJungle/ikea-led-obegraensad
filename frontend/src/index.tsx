@@ -67,7 +67,7 @@ const App = () => {
           <div
             role="status"
             class="fixed inset-x-0 z-40 mx-auto w-fit rounded-full bg-inverse px-4 py-2 font-mono text-[11px] tracking-[0.08em] text-on-inverse uppercase"
-            style={{ top: "max(0.75rem, env(safe-area-inset-top))" }}
+            style={{ top: "max(0.75rem, var(--safe-top))" }}
           >
             Reconnecting to the lamp…
           </div>

@@ -5,7 +5,7 @@ import { Icon, IconButton } from "../components/icons";
 import { BackBar } from "../components/ui";
 import { useStore } from "../contexts/store";
 import { useToast } from "../contexts/toast";
-import { modeLabel, modeNote } from "../lib/modes";
+import { modeKey, modeLabel, modeNote } from "../lib/modes";
 import { AnimationPanel } from "../modes/animation";
 import { CountdownPanel } from "../modes/countdown";
 import { DrawPanel } from "../modes/draw";
@@ -48,7 +48,7 @@ export const ModePage: Component<{ id: number }> = (props) => {
   const active = () => store.plugin === props.id && !store.isActiveScheduler;
   const isDefault = () => store.persistedPlugin === props.id;
   const name = () => plugin()?.name ?? "";
-  const entry = () => PANELS[name()];
+  const entry = () => PANELS[modeKey(name())];
 
   const activate = () => actions.send(JSON.stringify({ event: "plugin", plugin: props.id }));
 
@@ -92,7 +92,10 @@ export const ModePage: Component<{ id: number }> = (props) => {
             </div>
 
             <Show when={!entry()?.ownBoard}>
-              <LivePreview class="w-[min(100%,40dvh*9/13)]" />
+              {/* gives way to the settings below it, like on the home page */}
+              <div class="flex max-h-[40dvh] min-h-[180px] flex-1 items-center justify-center [container-type:size]">
+                <LivePreview class="w-[min(100cqw,calc((100cqh_-_1.5rem)*9/13_+_1.5rem))]" />
+              </div>
             </Show>
 
             <Show

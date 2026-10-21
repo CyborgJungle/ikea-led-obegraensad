@@ -7,7 +7,7 @@ const Toast = (props: { text?: string }) => (
   <div
     role="status"
     class="animate-toast-in fixed left-1/2 z-[60] flex -translate-x-1/2 items-center gap-2.5 rounded-full bg-inverse px-5 py-3 text-[15px] font-semibold whitespace-nowrap text-on-inverse shadow-lg shadow-black/25"
-    style={{ top: "max(1rem, env(safe-area-inset-top))" }}
+    style={{ top: "max(1rem, var(--safe-top))" }}
   >
     <span class="flex size-6 items-center justify-center rounded-full bg-signal text-on-signal">
       <Icon name="check" size={14} />

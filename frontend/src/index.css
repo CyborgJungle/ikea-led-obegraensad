@@ -18,6 +18,13 @@
   --c-on-inverse: #ece8e1;
   --c-danger: #b42318;
   color-scheme: light;
+
+  /* the notch and the home bar; variables so a browser can stand in for a phone */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  /* where the tab bar sits: off the home bar, 3.75rem tall (see tab-bar.tsx) */
+  --tab-bar-bottom: max(1rem, var(--safe-bottom));
+  --tab-bar-top: calc(var(--tab-bar-bottom) + 3.75rem);
 }
 
 :root[data-theme="dark"] {
@@ -135,8 +142,9 @@
   /* a full screen page: scrolls itself, clears the notch and the home bar */
   .page {
     @apply mx-auto flex h-dvh w-full max-w-[480px] flex-col gap-5 overflow-y-auto px-5;
-    padding-top: max(1.25rem, env(safe-area-inset-top));
-    padding-bottom: calc(6.5rem + env(safe-area-inset-bottom));
+    padding-top: max(1.25rem, var(--safe-top));
+    /* the last card ends a gap above the tab bar */
+    padding-bottom: calc(var(--tab-bar-top) + 1.25rem);
     overscroll-behavior: contain;
   }
 
@@ -146,7 +154,7 @@
   }
 
   .page-full {
-    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+    padding-bottom: max(1.5rem, var(--safe-bottom));
   }
 
   .title {
@@ -229,6 +237,11 @@
 
   .switch::after {
     @apply absolute top-1 left-1 size-6 rounded-full bg-card shadow transition-transform content-[''];
+  }
+
+  /* in dark mode a card-coloured knob disappears into the off track */
+  :root[data-theme="dark"] .switch:not(:checked)::after {
+    @apply bg-muted;
   }
 
   .switch:checked {

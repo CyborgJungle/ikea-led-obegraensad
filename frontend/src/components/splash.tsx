@@ -65,7 +65,7 @@ export const Splash: Component<{ leaving: boolean }> = (props) => {
       </div>
       <div
         class="absolute inset-x-0 text-center"
-        style={{ bottom: "max(3rem, env(safe-area-inset-bottom))" }}
+        style={{ bottom: "max(3rem, var(--safe-bottom))" }}
       >
         <div class="text-[22px] font-bold tracking-[-0.02em] text-[#ece8e1]">Obegränsad</div>
         <div class="mt-1 font-mono text-[11px] tracking-[0.08em] text-[#a39d94] uppercase">
