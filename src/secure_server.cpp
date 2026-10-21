@@ -368,12 +368,12 @@ esp_err_t handleCameraPage(httpd_req_t *request)
   return httpd_resp_send(request, CAMERA_PAGE, HTTPD_RESP_USE_STRLEN);
 }
 
-esp_err_t handleRoot(httpd_req_t *request)
+// Safari tries https:// first for every http:// link (iOS 18.2+) and only falls
+// back to http:// when that fails. So anything but the camera has to fail here,
+// otherwise links to the lamp app at http://<lamp>/ end up on this server.
+esp_err_t refuseOtherPaths(httpd_req_t *request, httpd_err_code_t)
 {
-  markActive(httpd_req_to_sockfd(request));
-  httpd_resp_set_status(request, "302 Found");
-  httpd_resp_set_hdr(request, "Location", "/camera");
-  return httpd_resp_send(request, nullptr, 0);
+  return ESP_FAIL; // closes the connection without an answer
 }
 
 // binary: one 16x16 grayscale frame; text "start": switch to the Camera mode
@@ -439,11 +439,10 @@ void startHttpsServer()
     session.fd = -1;
   }
 
-  const httpd_uri_t root = {.uri = "/", .method = HTTP_GET, .handler = handleRoot};
   const httpd_uri_t page = {.uri = "/camera", .method = HTTP_GET, .handler = handleCameraPage};
   httpd_uri_t socket = {.uri = "/ws", .method = HTTP_GET, .handler = handleCameraSocket};
   socket.is_websocket = true;
-  httpd_register_uri_handler(httpsServer, &root);
+  httpd_register_err_handler(httpsServer, HTTPD_404_NOT_FOUND, refuseOtherPaths);
   httpd_register_uri_handler(httpsServer, &page);
   httpd_register_uri_handler(httpsServer, &socket);
   Serial.println("[Secure] HTTPS server started on port 443");
