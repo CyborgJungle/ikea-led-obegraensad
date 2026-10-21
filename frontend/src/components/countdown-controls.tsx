@@ -37,28 +37,40 @@ export const CountdownControls: Component = () => {
     }
   });
 
-  // the device restarts the countdown on every request, also with the same duration
-  const start = async (value: number) => {
-    setSeconds(value);
-    if (!isValid()) {
-      return;
-    }
+  // the lamp shows a new duration and waits; it only counts down after a start
+  const send = async (body: Record<string, number | boolean>, done: string) => {
     setIsSending(true);
     try {
       const response = await fetch(`${API_URL}api/config`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ countdownSeconds: value }),
+        body: JSON.stringify(body),
       });
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
-      toast(`Countdown started: ${formatDuration(value)}`, 1500);
+      toast(done, 1500);
     } catch (error) {
-      console.error("Failed to start countdown:", error);
-      toast("Failed to start countdown", 2000);
+      console.error("Failed to update countdown:", error);
+      toast("Failed to reach the lamp", 2000);
     } finally {
       setIsSending(false);
+    }
+  };
+
+  const setDuration = (value: number) => {
+    setSeconds(value);
+    if (isValid()) {
+      send({ countdownSeconds: value }, `Set to ${formatDuration(value)}`);
+    }
+  };
+
+  const start = () => {
+    if (isValid()) {
+      send(
+        { countdownSeconds: seconds(), countdownStart: true },
+        `Countdown started: ${formatDuration(seconds())}`,
+      );
     }
   };
 
@@ -67,7 +79,7 @@ export const CountdownControls: Component = () => {
       class="space-y-3"
       onSubmit={(event) => {
         event.preventDefault();
-        start(seconds());
+        start();
       }}
     >
       <div class="flex items-center gap-2">
@@ -79,6 +91,7 @@ export const CountdownControls: Component = () => {
           aria-label="Countdown in seconds"
           value={seconds()}
           onInput={(e) => setSeconds(e.currentTarget.valueAsNumber)}
+          onChange={(e) => setDuration(e.currentTarget.valueAsNumber)}
           class="input"
         />
         <span class="shrink-0 text-sm text-muted">seconds</span>
@@ -90,17 +103,28 @@ export const CountdownControls: Component = () => {
               type="button"
               class="btn px-0 py-2 text-xs"
               disabled={isSending()}
-              onClick={() => start(preset)}
+              onClick={() => setDuration(preset)}
             >
               {formatDuration(preset)}
             </button>
           )}
         </For>
       </div>
-      <button type="submit" class="btn btn-accent w-full" disabled={!isValid() || isSending()}>
-        <i class="fa-solid fa-play" />
-        {isValid() ? `Start ${formatDuration(seconds())}` : `Enter 1 to ${MAX_SECONDS} seconds`}
-      </button>
+      <div class="grid grid-cols-[1fr_auto] gap-2">
+        <button type="submit" class="btn btn-accent" disabled={!isValid() || isSending()}>
+          <i class="fa-solid fa-play" />
+          {isValid() ? `Start ${formatDuration(seconds())}` : `Enter 1 to ${MAX_SECONDS} s`}
+        </button>
+        <button
+          type="button"
+          class="btn"
+          disabled={isSending()}
+          onClick={() => send({ countdownReset: true }, "Countdown reset")}
+        >
+          <i class="fa-solid fa-rotate-left" />
+          Reset
+        </button>
+      </div>
     </form>
   );
 };

@@ -29,8 +29,10 @@ private:
   // bumped on every text change, the Text and Board plugins reload when it differs
   volatile uint32_t textVersion;
   uint16_t countdownSeconds;
-  // bumped on every start request, also with the same duration, to restart it
+  // bumped on every start, also with the same duration, to (re)start it
   volatile uint32_t countdownRun;
+  // bumped on a new duration or a reset: the countdown shows it and waits
+  volatile uint32_t countdownReset;
   bool initialized;
 
 public:
@@ -61,6 +63,7 @@ public:
   uint32_t getTextVersion() const { return textVersion; }
   uint16_t getCountdownSeconds() const { return countdownSeconds; }
   uint32_t getCountdownRun() const { return countdownRun; }
+  uint32_t getCountdownReset() const { return countdownReset; }
   bool isInitialized() const { return initialized; }
   
   // Setters with validation
@@ -73,8 +76,10 @@ public:
   void setScrollSize(int size);
   void setBoardText(const String& text);
   void setBoardSpeed(int speed);
-  // sets the duration and restarts a running countdown
-  void startCountdown(int seconds);
+  // sets the duration, a running countdown stops and waits for a start
+  void setCountdownSeconds(int seconds);
+  void startCountdown();
+  void resetCountdown();
 
   static constexpr size_t SCROLL_TEXT_MAX_LENGTH = 200;
   static constexpr uint16_t SCROLL_SPEED_MIN = 20;  // ms per pixel

@@ -8,6 +8,8 @@ namespace
 constexpr unsigned long RIPPLE_PERIOD = 1600;
 constexpr float RIPPLE_REACH = 12.0f;
 constexpr unsigned long FRAME_INTERVAL = 33;
+// how long the rings show that the time is up, before the next countdown can start
+constexpr unsigned long FINISHED_ANIMATION = 6000;
 
 void drawCentered(const PixelFont &font, const String &text, int y)
 {
@@ -21,19 +23,27 @@ String twoDigits(int value)
 }
 } // namespace
 
-void CountdownPlugin::restart()
+void CountdownPlugin::wait()
+{
+  loadedReset = config.getCountdownReset();
+  phase = WAITING;
+  drawRemaining(config.getCountdownSeconds());
+}
+
+void CountdownPlugin::start()
 {
   loadedRun = config.getCountdownRun();
   durationMillis = config.getCountdownSeconds() * 1000UL;
   startMillis = millis();
   shownSeconds = -1;
-  finished = false;
+  phase = RUNNING;
 }
 
 void CountdownPlugin::setup()
 {
-  Screen.clear();
-  restart();
+  // starts made before switching to this mode do not count
+  loadedRun = config.getCountdownRun();
+  wait();
 }
 
 void CountdownPlugin::drawRemaining(int seconds)
@@ -96,38 +106,52 @@ void CountdownPlugin::drawFinished(unsigned long elapsed)
 
 void CountdownPlugin::loop()
 {
+  // a new duration or reset first: a start sent together with it still starts
+  if (loadedReset != config.getCountdownReset())
+  {
+    wait();
+  }
   if (loadedRun != config.getCountdownRun())
   {
-    restart();
+    start();
   }
 
   const unsigned long now = millis();
+  switch (phase)
+  {
+  case WAITING:
+    break;
 
-  if (!finished)
+  case RUNNING:
   {
     const unsigned long elapsed = now - startMillis;
     if (elapsed >= durationMillis)
     {
-      finished = true;
+      phase = FINISHED;
       finishedMillis = now;
+      break;
     }
-    else
+    // round up: show 1 during the last second, 0 never
+    const int seconds = (durationMillis - elapsed + 999) / 1000;
+    if (seconds != shownSeconds)
     {
-      // round up: show 1 during the last second, 0 never
-      const int seconds = (durationMillis - elapsed + 999) / 1000;
-      if (seconds != shownSeconds)
-      {
-        shownSeconds = seconds;
-        drawRemaining(seconds);
-      }
-      return;
+      shownSeconds = seconds;
+      drawRemaining(seconds);
     }
+    break;
   }
 
-  if (now - lastFrame >= FRAME_INTERVAL)
-  {
-    lastFrame = now;
-    drawFinished(now - finishedMillis);
+  case FINISHED:
+    if (now - finishedMillis >= FINISHED_ANIMATION)
+    {
+      wait();
+    }
+    else if (now - lastFrame >= FRAME_INTERVAL)
+    {
+      lastFrame = now;
+      drawFinished(now - finishedMillis);
+    }
+    break;
   }
 }
 
