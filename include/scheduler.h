@@ -17,6 +17,10 @@ private:
   unsigned long lastSwitch = 0;
   size_t currentIndex = 0;
 
+  // last result of the active hours check: -1 unknown, 0 outside, 1 inside
+  int8_t insideHours = -1;
+  unsigned long lastHoursCheck = 0;
+
   bool needsPersist = false;
   unsigned long lastPersistRequest = 0;
   static constexpr unsigned long PERSIST_DELAY_MS = 2000;
@@ -40,6 +44,7 @@ public:
 
 private:
   void switchToCurrentPlugin();
+  void updateActiveHours();
   void requestPersist();
   void checkAndPersist();
 };

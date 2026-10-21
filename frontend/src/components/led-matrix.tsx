@@ -8,6 +8,8 @@ interface Props {
   data: number[];
   indexData: number[];
   brightness: number;
+  // width of the board; it keeps the lamp's 9:13 shape
+  class?: string;
 }
 
 export const LedMatrix: Component<Props> = (props) => {
@@ -215,7 +217,11 @@ export const LedMatrix: Component<Props> = (props) => {
   });
 
   return (
-    <div class="mx-auto w-[min(100%,700px,(100dvh-16rem)*9/13)] rounded-3xl bg-[#050506] p-3 shadow-2xl shadow-black/40 ring-1 ring-line max-lg:w-[min(100%,55dvh*9/13)] sm:p-4">
+    <div
+      class={`mx-auto rounded-3xl bg-[#050506] p-3 shadow-2xl shadow-black/40 ring-1 ring-line sm:p-4 ${
+        props.class ?? "w-[min(100%,46dvh*9/13)]"
+      }`}
+    >
       <div
         ref={containerRef}
         class={`

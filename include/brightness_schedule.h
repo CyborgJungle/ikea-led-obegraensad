@@ -23,10 +23,11 @@ private:
   bool initialized_ = false;
 
   void persist();
-  static bool parseTime(const String &value, uint16_t &minutes);
   static String formatTime(uint16_t minutes);
 
 public:
+  // "HH:MM" to minutes since midnight, false when malformed
+  static bool parseTime(const String &value, uint16_t &minutes);
   enum class ConfigureStatus
   {
     Success,
