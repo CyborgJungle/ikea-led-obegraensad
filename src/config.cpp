@@ -9,6 +9,7 @@ Config::Config()
   initialized = false;
   textVersion = 0;
   countdownRun = 0;
+  countdownReset = 0;
 #ifdef ENABLE_STORAGE
   storageAvailable = false;
 #endif
@@ -244,10 +245,20 @@ void Config::setBoardSpeed(int speed)
   boardSpeed = constrain(speed, SCROLL_SPEED_MIN, SCROLL_SPEED_MAX);
 }
 
-void Config::startCountdown(int seconds)
+void Config::setCountdownSeconds(int seconds)
 {
   countdownSeconds = constrain(seconds, 1, COUNTDOWN_MAX_SECONDS);
+  countdownReset++;
+}
+
+void Config::startCountdown()
+{
   countdownRun++;
+}
+
+void Config::resetCountdown()
+{
+  countdownReset++;
 }
 
 
@@ -333,8 +344,17 @@ bool Config::fromJson(const String& json)
     setBoardSpeed(doc["boardSpeed"].as<int>());
   }
 
+  // duration first, so {"countdownSeconds": 30, "countdownStart": true} starts 30 s
   if (doc["countdownSeconds"].is<int>()) {
-    startCountdown(doc["countdownSeconds"].as<int>());
+    setCountdownSeconds(doc["countdownSeconds"].as<int>());
+  }
+
+  if (doc["countdownStart"] | false) {
+    startCountdown();
+  }
+
+  if (doc["countdownReset"] | false) {
+    resetCountdown();
   }
   
   return true;
