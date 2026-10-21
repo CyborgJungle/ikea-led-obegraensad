@@ -24,8 +24,7 @@ export const ModePicker: Component = () => {
     if (id !== store.plugin || store.isActiveScheduler) {
       actions.send(JSON.stringify({ event: "plugin", plugin: id }));
     }
-    // replace the picker in history: back from the mode page goes home
-    navigate(`/mode/${id}`, true);
+    navigate(`/mode/${id}`);
   };
 
   return (
@@ -46,7 +45,7 @@ export const ModePicker: Component = () => {
             type="button"
             class="disc border-[#3a3936] text-[#ece8e1]"
             aria-label="Close"
-            onClick={() => navigate("/", true)}
+            onClick={() => navigate("/")}
           >
             <Icon name="close" />
           </button>

@@ -19,7 +19,15 @@ export const CameraPanel: Component<PanelProps> = (props) => {
   const [setup, setSetup] = createSignal(false);
   return (
     <>
-      <a href={cameraUrl(props.plugin.id)} class="btn btn-signal h-16 text-lg no-underline">
+      {/* replaces this page, like every move in the app: no swipe back to it */}
+      <a
+        href={cameraUrl(props.plugin.id)}
+        class="btn btn-signal h-16 text-lg no-underline"
+        onClick={(event) => {
+          event.preventDefault();
+          window.location.replace(event.currentTarget.href);
+        }}
+      >
         <Icon name="camera" size={22} />
         Open camera
       </a>

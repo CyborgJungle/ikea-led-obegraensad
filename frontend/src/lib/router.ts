@@ -24,11 +24,15 @@ window.addEventListener("hashchange", () => setRoute(parse(window.location.hash)
 
 export { route };
 
-// replace: no history entry, so Back skips it (picker → mode page → home)
-export const navigate = (path: string, replace = false) => {
-  if (replace) {
-    window.location.replace(`#${path}`);
-  } else {
-    window.location.hash = path;
-  }
-};
+// Every move replaces the current history entry instead of adding one: the
+// history stays one page long, so the edge swipe of a home screen app has
+// nothing to go back to. The app has its own back buttons.
+export const navigate = (path: string) => window.location.replace(`#${path}`);
+
+// links within the app (href="#/...") replace too
+document.addEventListener("click", (event) => {
+  const link = (event.target as Element | null)?.closest?.('a[href^="#"]');
+  if (!link || event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey) return;
+  event.preventDefault();
+  navigate((link.getAttribute("href") ?? "#/").slice(1));
+});

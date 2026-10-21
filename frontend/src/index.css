@@ -78,6 +78,15 @@
     margin: 0;
   }
 
+  /* the document never scrolls or bounces, only a page inside it does; when
+     iOS moved the document, the fixed tab bar moved along with it */
+  html,
+  body {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+  }
+
   /* a native app feel on iPhone: no double-tap zoom, no text resizing,
      no rubber banding of the whole page, no grey tap flashes */
   html {

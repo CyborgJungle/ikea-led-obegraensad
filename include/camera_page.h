@@ -31,6 +31,8 @@ static const char CAMERA_PAGE[] = R"html(<!doctype html>
   * { box-sizing: border-box; }
   html { touch-action: manipulation; -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; margin: 0; }
+  /* the document never scrolls or bounces, only the page inside it does */
+  html, body { position: fixed; inset: 0; overflow: hidden; }
   body { background: var(--ground); color: var(--ink); overscroll-behavior: none;
     font: 16px/1.4 -apple-system, "SF Pro Display", system-ui, "Segoe UI", Roboto, sans-serif;
     -webkit-font-smoothing: antialiased; -webkit-user-select: none; user-select: none; }
@@ -143,6 +145,12 @@ document.documentElement.dataset.theme =
 document.querySelector('meta[name="theme-color"]').content = getComputedStyle(document.documentElement).getPropertyValue("--ground").trim();
 if (/^\d+$/.test(params.get("mode") || "")) $("label").textContent = "Mode #" + params.get("mode");
 $("back").href = "http://" + location.hostname + "/#/";
+// replaces this page like every move in the app, so the edge swipe of a home
+// screen app has no page to go back to
+$("back").onclick = (event) => {
+  event.preventDefault();
+  location.replace($("back").href);
+};
 
 function setState(note, live) {
   $("note").textContent = note;

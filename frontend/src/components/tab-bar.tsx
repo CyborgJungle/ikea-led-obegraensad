@@ -1,7 +1,20 @@
-import { type Component, For } from "solid-js";
+import { type Component, createSignal, For, Show } from "solid-js";
 
 import { route } from "../lib/router";
 import { Icon, type IconName } from "./icons";
+
+// a field that brings up the keyboard has focus; the keyboard would push the
+// bar up the screen, so it steps aside like it does in an app
+const typesText = (element: EventTarget | null) =>
+  element instanceof HTMLTextAreaElement ||
+  element instanceof HTMLSelectElement ||
+  (element instanceof HTMLInputElement &&
+    !["range", "checkbox", "radio", "button", "submit", "file", "color"].includes(element.type));
+const [typing, setTyping] = createSignal(typesText(document.activeElement));
+document.addEventListener("focusin", (event) => setTyping(typesText(event.target)));
+document.addEventListener("focusout", (event) => {
+  if (!typesText(event.relatedTarget)) setTyping(false);
+});
 
 const TABS: {
   page: "home" | "routine" | "settings";
@@ -16,7 +29,7 @@ const TABS: {
 
 // the black pill at the bottom; mode pages hide it and show a back button instead
 export const TabBar: Component = () => (
-  <>
+  <Show when={!typing()}>
     {/* scrolled content fades out under the bar instead of showing around it */}
     <div
       aria-hidden="true"
@@ -46,5 +59,5 @@ export const TabBar: Component = () => (
         )}
       </For>
     </nav>
-  </>
+  </Show>
 );
