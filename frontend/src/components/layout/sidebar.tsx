@@ -1,6 +1,7 @@
 import { type Component, createSignal, For, type JSX, Show } from "solid-js";
 
 import { useStore } from "../../contexts/store";
+import { CameraControls } from "../camera-controls";
 import { CountdownControls } from "../countdown-controls";
 import { ToggleScheduleButton } from "../../scheduler";
 import type { BrightnessSchedule } from "../../types";
@@ -38,6 +39,7 @@ const toPercent = (value: number) => `${Math.round((value / 255) * 100)}%`;
 export const Sidebar: Component<SidebarProps> = (props) => {
   const [store] = useStore();
   const [scheduleError, setScheduleError] = createSignal<string>();
+  const activePluginName = () => store.plugins.find((plugin) => plugin.id === store.plugin)?.name;
   const updateBrightnessSchedule = (changes: Partial<BrightnessSchedule>, shouldSend = true) => {
     const next = { ...store.brightnessSchedule, ...changes };
     if (!next.startTime || !next.endTime) {
@@ -81,11 +83,15 @@ export const Sidebar: Component<SidebarProps> = (props) => {
           </button>
         </SidebarSection>
 
-        <Show
-          when={store.plugins.find((plugin) => plugin.id === store.plugin)?.name === "Countdown"}
-        >
+        <Show when={activePluginName() === "Countdown"}>
           <SidebarSection title="Countdown">
             <CountdownControls />
+          </SidebarSection>
+        </Show>
+
+        <Show when={activePluginName() === "Camera"}>
+          <SidebarSection title="Camera">
+            <CameraControls />
           </SidebarSection>
         </Show>
       </Show>

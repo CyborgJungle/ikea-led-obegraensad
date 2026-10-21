@@ -67,6 +67,10 @@
 #include "plugins/BigClockPlugin.h"
 #include "plugins/ClockPlugin.h"
 #include "plugins/WeatherPlugin.h"
+#ifdef ESP32
+#include "plugins/CameraPlugin.h"
+#include "secure_server.h"
+#endif
 #endif
 
 #include "asyncwebserver.h"
@@ -274,6 +278,10 @@ void baseSetup()
 
   initOTA(server);
   initWebsocketServer(server);
+#ifdef ESP32
+  // before the web server, which offers its certificate for download
+  initSecureServer();
+#endif
   initWebServer();
 #endif
 
@@ -324,6 +332,9 @@ void baseSetup()
   pluginManager.addPlugin(new TextPlugin());
   pluginManager.addPlugin(new BoardPlugin());
   pluginManager.addPlugin(new CountdownPlugin());
+#if defined(ESP32) && defined(ENABLE_SERVER)
+  pluginManager.addPlugin(new CameraPlugin());
+#endif
 
   Screen.clear();
   pluginManager.init();
@@ -421,6 +432,9 @@ void loop()
 
 #ifdef ENABLE_SERVER
   ElegantOTA.loop();
+#ifdef ESP32
+  secureServerLoop();
+#endif
 #endif
 
 #ifndef ESP32

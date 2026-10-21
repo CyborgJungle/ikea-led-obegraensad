@@ -1,6 +1,9 @@
 #include "asyncwebserver.h"
 #include "messages.h"
 #include "webhandler.h"
+#ifdef ESP32
+#include "secure_server.h"
+#endif
 
 #ifdef ENABLE_SERVER
 
@@ -23,6 +26,19 @@ void initWebServer()
   server.on("/api/removemessage", HTTP_GET, handleMessageRemove);
 
   server.on("/api/info", HTTP_GET, handleGetInfo);
+
+#ifdef ESP32
+  // phones install this once to trust the HTTPS camera page
+  server.on("/lamp-ca.cer", HTTP_GET, [](AsyncWebServerRequest *request) {
+    const std::vector<uint8_t> &certificate = getLampCaCertificate();
+    if (certificate.empty())
+    {
+      request->send(503, "text/plain", "Certificate not available");
+      return;
+    }
+    request->send(200, "application/x-x509-ca-cert", certificate.data(), certificate.size());
+  });
+#endif
 
 #ifdef ESP32
   // registered before /api/coredump, which would otherwise match the raw path too
