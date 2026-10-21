@@ -1,4 +1,5 @@
 #include "asyncwebserver.h"
+#include "app_icon.h"
 #include "messages.h"
 #include "webhandler.h"
 #ifdef ESP32
@@ -17,6 +18,18 @@ void initWebServer()
   DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", "*");
 
   server.on("/", HTTP_GET, startGui);
+  server.on("/apple-touch-icon.png", HTTP_GET, [](AsyncWebServerRequest *request) {
+    AsyncWebServerResponse *response =
+        request->beginResponse(200, "image/png", APP_ICON_180, sizeof(APP_ICON_180));
+    response->addHeader("Cache-Control", "max-age=86400");
+    request->send(response);
+  });
+  server.on("/favicon.png", HTTP_GET, [](AsyncWebServerRequest *request) {
+    AsyncWebServerResponse *response =
+        request->beginResponse(200, "image/png", APP_ICON_64, sizeof(APP_ICON_64));
+    response->addHeader("Cache-Control", "max-age=86400");
+    request->send(response);
+  });
   server.onNotFound(
       [](AsyncWebServerRequest *request) { request->send(404, "text/plain", "Page not found!"); });
 

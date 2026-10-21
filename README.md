@@ -27,9 +27,7 @@ Turn your OBEGRÄNSAD LED Wall Lamp into a live drawing canvas
       - [DNS Servers](#dns-servers)
   - [OTA Updates](#ota-updates)
     - [Configuration](#configuration)
-    - [Upload Methods](#upload-methods)
-      - [Method 1: Web Interface (Manual Upload)](#method-1-web-interface-manual-upload)
-      - [Method 2: PlatformIO (Automated Upload)](#method-2-platformio-automated-upload)
+    - [Uploading](#uploading)
     - [Visual Feedback](#visual-feedback)
   - [HTTP API Reference](#http-api-reference)
     - [Device Information](#device-information)
@@ -256,79 +254,48 @@ For ESP8266, WiFi Manager is not available. Set `WIFI_SSID` and `WIFI_PASSWORD` 
 
 ## OTA Updates
 
-Over-The-Air (OTA) updates allow you to upload new firmware wirelessly without a USB connection. This is powered by [ElegantOTA](https://github.com/ayushsharma82/ElegantOTA).
+Over-The-Air (OTA) updates upload new firmware over WiFi, without a USB connection. The lamp accepts firmware at `POST /api/firmware` (password protected, no web page); `upload.py` sends it from PlatformIO. The very first firmware still has to be flashed over USB.
 
 ### Configuration
 
-Before using OTA, configure the following:
-
-1. **Set OTA Credentials** in `include/secrets.h`:
+1. **Set OTA credentials** in `include/secrets.h`:
 
    ```cpp
    #define OTA_USERNAME "admin"
    #define OTA_PASSWORD "your-password"
    ```
 
-2. **Configure Upload Settings** in `platformio.ini` (for the `esp32dev` environment):
+2. **Use an OTA environment** in `platformio.ini`, for example the included `esp32s3-ota`:
    ```ini
+   [env:esp32s3-ota]
+   extends = env:esp32s3
    extra_scripts = upload.py
    upload_protocol = custom
-   custom_upload_url = http://192.168.178.50  # Your device IP
+   custom_upload_url = http://ikea-led.local  # or the device IP
    custom_username = admin
    custom_password = your-password
    ```
 
-**Note:** Replace `192.168.178.50` with your device's actual IP address.
-
-### Upload Methods
-
-#### Method 1: Web Interface (Manual Upload)
-
-1. Navigate to `http://your-device-ip/update` in your browser
-2. Login with your configured credentials (default: `admin` / `ikea-led-wall`)
-3. Select your firmware file (`.pio/build/esp32dev/firmware.bin`)
-4. Click "Update" and wait for completion
-5. Device will automatically reboot with new firmware
-
-#### Method 2: PlatformIO (Automated Upload)
-
-Upload directly from PlatformIO via the command line:
+### Uploading
 
 ```bash
-pio run -e esp32dev -t upload
+pio run -e esp32s3-ota -t upload
 ```
 
-Or use the PlatformIO Upload button in VS Code (bottom toolbar).
+Or use the PlatformIO Upload button in VS Code with that environment. `upload.py` installs `requests_toolbelt` and `tqdm` if they are missing.
 
-**Requirements:**
-
-- Python packages: `requests_toolbelt` and `tqdm`
-- Install if needed: `pip install requests_toolbelt tqdm`
+The upload is checked before the lamp switches to it: a wrong checksum, a file that is not firmware or a wrong password is refused and the lamp keeps running its current firmware.
 
 ### Visual Feedback
 
-During OTA updates, the LED matrix provides visual feedback:
-
-- **"U" letter displayed**: Update has started
-- **Serial output**: Progress updates every second
-- **"R" letter displayed**: Update completed (device will reboot)
-
-Monitor the serial output for detailed progress:
-
-```
-OTA update started!
-OTA Progress Current: 262144 bytes, Final: 1440655 bytes
-OTA Progress Current: 524288 bytes, Final: 1440655 bytes
-...
-OTA update finished successfully!
-```
+- **"U"** on the matrix: update in progress
+- **"R"**: update finished, the lamp restarts into the new firmware
 
 **Troubleshooting:**
 
-- Ensure device is connected to the same network
-- Verify IP address in `platformio.ini` matches device IP
-- Check credentials match in both `secrets.h` and `platformio.ini`
-- For upload failures, try the web interface method first
+- Ensure the device is on the same network
+- Check `custom_upload_url` points at the device (`ikea-led.local` or its IP)
+- Check the credentials match in `secrets.h` and `platformio.ini`
 
 ---
 

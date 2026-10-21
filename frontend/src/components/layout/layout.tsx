@@ -51,7 +51,6 @@ export const Layout: Component<{
     },
     { href: "#/scheduler", label: "Scheduler", icon: "fa-clock" },
     { href: "#/settings", label: "Settings", icon: "fa-gear" },
-    { href: "/update", label: "Firmware Update", icon: "fa-download" },
   ];
 
   const visibleNavItems = () => navItems.filter((item) => item.visible?.() ?? true);
@@ -82,7 +81,7 @@ export const Layout: Component<{
         <div class="flex-1 min-h-0 flex flex-col overflow-y-auto lg:overflow-hidden lg:grid lg:grid-cols-[300px_1fr] lg:gap-4 lg:p-4">
           <header class="lg:hidden sticky top-0 z-30 flex items-center justify-between gap-2 border-b border-line bg-canvas/80 px-4 py-3 backdrop-blur-lg">
             <Brand />
-            {/* six icons have to fit next to the brand on a 375px wide phone */}
+            {/* all icons have to fit next to the brand on a 375px wide phone */}
             <nav class="flex gap-0.5">
               <For each={visibleNavItems()}>
                 {(item) => (

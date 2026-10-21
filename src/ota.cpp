@@ -2,65 +2,166 @@
 
 #ifdef ENABLE_SERVER
 
-const char *otaUser = OTA_USERNAME;
-const char *otaPassword = OTA_PASSWORD;
+#ifdef ESP32
+#include <Update.h>
+#else
+#include <Updater.h>
+#endif
 
-unsigned long ota_progress_millis = 0;
-
-void onOTAStart()
+namespace
 {
-  Serial.println("OTA update started!");
-  currentStatus = UPDATE;
+// one update at a time; set by the upload handler, read by the request handler
+bool updateStarted = false;
+bool updateSucceeded = false;
+bool unauthorized = false;
+String updateError;
+unsigned long progressMillis = 0;
+unsigned long restartAt = 0;
 
+bool isAuthorized(AsyncWebServerRequest *request)
+{
+  return request->authenticate(OTA_USERNAME, OTA_PASSWORD);
+}
+
+void showUpdating()
+{
+  currentStatus = UPDATE;
   Screen.clear();
   Screen.drawBitmap(0, 0, letterU, sizeof(letterU), COLS, MAX_BRIGHTNESS);
 }
 
-void onOTAProgress(size_t current, size_t final)
+void showRestarting()
 {
-  // Log every 1 second
-  if (millis() - ota_progress_millis > 1000)
-  {
-    ota_progress_millis = millis();
-    Serial.printf("OTA Progress Current: %u bytes, Final: %u bytes\n", current, final);
-  }
-}
-
-void onOTAEnd(bool success)
-{
-  // Log when OTA has finished
-  if (success)
-  {
-    Serial.println("OTA update finished successfully!");
-  }
-  else
-  {
-    Serial.println("There was an error during OTA update!");
-  }
-
   Screen.drawBitmap(0, 0, letterR, sizeof(letterR), COLS);
-
-#ifdef ESP32
-  vTaskDelay(pdMS_TO_TICKS(1000));
-#else
-  delay(1000);
-#endif
-
-  currentStatus = NONE;
-  Screen.loadFromStorage();
 }
+
+void fail(const char *reason)
+{
+  if (updateError.isEmpty())
+  {
+    updateError = reason;
+  }
+#ifdef ESP32
+  Update.abort();
+#endif
+}
+
+void handleChunk(AsyncWebServerRequest *request,
+                 const String &filename,
+                 size_t index,
+                 uint8_t *data,
+                 size_t length,
+                 bool final)
+{
+  if (index == 0)
+  {
+    updateStarted = false;
+    updateSucceeded = false;
+    updateError = "";
+    unauthorized = !isAuthorized(request);
+    if (unauthorized)
+    {
+      return;
+    }
+
+    Serial.println("OTA update started");
+    showUpdating();
+    updateStarted = true;
+#ifdef ESP32
+    const bool begun = Update.begin(UPDATE_SIZE_UNKNOWN, U_FLASH);
+#else
+    Update.runAsync(true);
+    const bool begun = Update.begin((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000);
+#endif
+    if (!begun)
+    {
+      fail("Could not start the update");
+      return;
+    }
+    if (request->hasHeader("X-MD5"))
+    {
+      Update.setMD5(request->getHeader("X-MD5")->value().c_str());
+    }
+  }
+
+  if (unauthorized || !updateError.isEmpty())
+  {
+    return;
+  }
+
+  if (Update.write(data, length) != length)
+  {
+    fail("Writing the firmware failed");
+    return;
+  }
+
+  if (millis() - progressMillis > 1000)
+  {
+    progressMillis = millis();
+    Serial.printf("OTA progress: %u bytes\n", index + length);
+  }
+
+  if (final)
+  {
+    if (Update.end(true))
+    {
+      updateSucceeded = true;
+    }
+    else
+    {
+      fail("Firmware rejected (size or checksum)");
+    }
+  }
+}
+
+void handleUploadDone(AsyncWebServerRequest *request)
+{
+  if (unauthorized)
+  {
+    unauthorized = false;
+    request->requestAuthentication();
+    return;
+  }
+
+  if (updateSucceeded)
+  {
+    Serial.println("OTA update finished, restarting");
+    showRestarting();
+    request->send(200, "text/plain", "OK");
+    // let the response go out before restarting
+    restartAt = millis() + 1000;
+    return;
+  }
+
+  Serial.printf("OTA update failed: %s\n", updateError.c_str());
+  request->send(500, "text/plain", updateError.isEmpty() ? "No firmware received" : updateError);
+  if (updateStarted)
+  {
+    currentStatus = NONE;
+    Screen.loadFromStorage();
+  }
+}
+} // namespace
 
 void initOTA(AsyncWebServer &server)
 {
-  ElegantOTA.begin(&server);
-  ElegantOTA.setAutoReboot(true);
-  ElegantOTA.setAuth(otaUser, otaPassword);
+  server.on("/api/firmware", HTTP_GET, [](AsyncWebServerRequest *request) {
+    if (!isAuthorized(request))
+    {
+      request->requestAuthentication();
+      return;
+    }
+    request->send(200, "application/json", "{\"ready\":true}");
+  });
+  server.on("/api/firmware", HTTP_POST, handleUploadDone, handleChunk);
+}
 
-  ElegantOTA.onStart([]() { onOTAStart(); });
-
-  ElegantOTA.onProgress([](size_t current, size_t final) { onOTAProgress(current, final); });
-
-  ElegantOTA.onEnd([](bool success) { onOTAEnd(success); });
+void otaLoop()
+{
+  if (restartAt && (long)(millis() - restartAt) >= 0)
+  {
+    ESP.restart();
+  }
 }
 
 #endif
