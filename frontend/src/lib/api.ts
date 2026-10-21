@@ -66,5 +66,8 @@ export const stopSchedule = () => request("api/schedule/stop");
 export const clearSchedule = () => request("api/schedule/clear");
 
 // the HTTPS camera page and the certificate phones install once to trust it
-export const cameraUrl = () => `https://${window.location.hostname}/camera`;
+// the camera page runs on another address and cannot read this app's
+// settings, so it is told the light/dark choice and the mode number
+export const cameraUrl = (modeId: number) =>
+  `https://${window.location.hostname}/camera?mode=${modeId}&theme=${document.documentElement.dataset.theme ?? ""}`;
 export const certificateUrl = () => `http://${window.location.hostname}/lamp-ca.cer`;

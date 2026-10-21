@@ -15,11 +15,11 @@ const CAMERA_STEPS = [
 ];
 
 // Camera: the camera page runs on the lamp's HTTPS server, phones only allow the camera there
-export const CameraPanel: Component<PanelProps> = () => {
+export const CameraPanel: Component<PanelProps> = (props) => {
   const [setup, setSetup] = createSignal(false);
   return (
     <>
-      <a href={cameraUrl()} class="btn btn-signal h-16 text-lg no-underline">
+      <a href={cameraUrl(props.plugin.id)} class="btn btn-signal h-16 text-lg no-underline">
         <Icon name="camera" size={22} />
         Open camera
       </a>

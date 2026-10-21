@@ -3,6 +3,8 @@
 // frames arrive over the HTTPS server, which only exists on ESP32
 #ifdef ESP32
 
+#include <WiFi.h>
+
 namespace
 {
 portMUX_TYPE frameMux = portMUX_INITIALIZER_UNLOCKED;
@@ -87,6 +89,15 @@ void CameraPlugin::setup()
 {
   shownFrame = frameCount;
   drawIdle();
+  // with power saving the radio sleeps between beacons and a frame can wait
+  // ~100 ms for it to wake; the stream needs it awake, the other modes do not
+  wifiSleepBefore = WiFi.getSleep();
+  WiFi.setSleep(false);
+}
+
+void CameraPlugin::teardown()
+{
+  WiFi.setSleep(wifiSleepBefore);
 }
 
 void CameraPlugin::loop()

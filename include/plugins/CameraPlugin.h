@@ -9,6 +9,8 @@ class CameraPlugin : public Plugin
 private:
   uint32_t shownFrame = 0;
   bool idleShown = false;
+  // WiFi power saving as it was before this mode, restored on leaving it
+  bool wifiSleepBefore = true;
 
   void drawIdle();
 
@@ -17,6 +19,7 @@ public:
   static void receiveFrame(const uint8_t *pixels);
 
   void setup() override;
+  void teardown() override;
   void loop() override;
   const char *getName() const override;
 };
