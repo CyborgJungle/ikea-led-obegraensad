@@ -31,8 +31,9 @@ static const char CAMERA_PAGE[] = R"html(<!doctype html>
   * { box-sizing: border-box; }
   html { touch-action: manipulation; -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; margin: 0; }
-  /* the document never scrolls or bounces, only the page inside it does */
-  html, body { overflow: hidden; overscroll-behavior: none; }
+  /* the document does not bounce, only the page inside it scrolls; no
+     overflow: hidden or position: fixed, iOS then sizes a home screen app short */
+  html { overscroll-behavior: none; }
   body { background: var(--ground); color: var(--ink); overscroll-behavior: none;
     font: 16px/1.4 -apple-system, "SF Pro Display", system-ui, "Segoe UI", Roboto, sans-serif;
     -webkit-font-smoothing: antialiased; -webkit-user-select: none; user-select: none; }

@@ -79,13 +79,11 @@
     margin: 0;
   }
 
-  /* the document never scrolls or bounces, only a page inside it does; when
-     iOS moved the document, the fixed tab bar moved along with it. Not
-     position: fixed: in a home screen app iOS then sizes the document
-     without the home bar area and the tab bar floats ~60 pt too high */
-  html,
-  body {
-    overflow: hidden;
+  /* the document does not bounce, only a page inside it scrolls. No
+     position: fixed or overflow: hidden here: in a home screen app iOS then
+     sizes the document without the home bar area and the fixed tab bar
+     floats ~60 pt too high */
+  html {
     overscroll-behavior: none;
   }
 
