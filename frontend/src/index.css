@@ -22,8 +22,9 @@
   /* the notch and the home bar; variables so a browser can stand in for a phone */
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
-  /* where the tab bar sits: off the home bar, 3.75rem tall (see tab-bar.tsx) */
-  --tab-bar-bottom: max(1rem, var(--safe-bottom));
+  /* where the tab bar sits: low like an app's, into the home bar area but
+     clear of the home indicator; 3.75rem tall (see tab-bar.tsx) */
+  --tab-bar-bottom: max(0.75rem, calc(var(--safe-bottom) - 0.75rem));
   --tab-bar-top: calc(var(--tab-bar-bottom) + 3.75rem);
 }
 
@@ -79,12 +80,13 @@
   }
 
   /* the document never scrolls or bounces, only a page inside it does; when
-     iOS moved the document, the fixed tab bar moved along with it */
+     iOS moved the document, the fixed tab bar moved along with it. Not
+     position: fixed: in a home screen app iOS then sizes the document
+     without the home bar area and the tab bar floats ~60 pt too high */
   html,
   body {
-    position: fixed;
-    inset: 0;
     overflow: hidden;
+    overscroll-behavior: none;
   }
 
   /* a native app feel on iPhone: no double-tap zoom, no text resizing,

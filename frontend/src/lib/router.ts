@@ -1,18 +1,19 @@
 import { createSignal } from "solid-js";
 
 // Hash routes, so the lamp only has to serve one page:
-// #/  #/modes  #/mode/<id>  #/routine  #/settings
+// #/  #/modes  #/mode  #/mode/<id>  #/routine  #/settings
+// #/mode is the Mode tab: the mode the lamp shows now
 export type Route =
   | { page: "home" }
   | { page: "modes" }
-  | { page: "mode"; id: number }
+  | { page: "mode"; id?: number }
   | { page: "routine" }
   | { page: "settings" };
 
 const parse = (hash: string): Route => {
   const path = hash.replace(/^#/, "") || "/";
-  const mode = path.match(/^\/mode\/(\d+)$/);
-  if (mode) return { page: "mode", id: Number(mode[1]) };
+  const mode = path.match(/^\/mode(?:\/(\d+))?$/);
+  if (mode) return { page: "mode", id: mode[1] ? Number(mode[1]) : undefined };
   if (path === "/modes") return { page: "modes" };
   if (path === "/routine") return { page: "routine" };
   if (path === "/settings") return { page: "settings" };

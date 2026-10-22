@@ -1,8 +1,5 @@
 import { type Component, For, type JSX, Show } from "solid-js";
 
-import { navigate } from "../lib/router";
-import { Icon } from "./icons";
-
 // Two-line title, the second line muted: "Obegränsad / Connected"
 export const PageTitle: Component<{ title: string; sub?: JSX.Element; aside?: JSX.Element }> = (
   props,
@@ -14,17 +11,6 @@ export const PageTitle: Component<{ title: string; sub?: JSX.Element; aside?: JS
     </h1>
     <Show when={props.aside}>{props.aside}</Show>
   </header>
-);
-
-// full screen pages (a mode) go back to the home page
-export const BackBar: Component<{ label: string; aside?: JSX.Element }> = (props) => (
-  <div class="flex items-center justify-between gap-3">
-    <button type="button" class="disc" aria-label="Back to home" onClick={() => navigate("/")}>
-      <Icon name="back" />
-    </button>
-    <span class="label">{props.label}</span>
-    <div class="flex min-w-11 justify-end">{props.aside}</div>
-  </div>
 );
 
 export const Section: Component<{ title: string; aside?: JSX.Element; children: JSX.Element }> = (

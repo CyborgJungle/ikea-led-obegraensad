@@ -2,7 +2,6 @@ import { type Component, Show } from "solid-js";
 import { Dynamic } from "solid-js/web";
 
 import { Icon, IconButton } from "../components/icons";
-import { BackBar } from "../components/ui";
 import { useStore } from "../contexts/store";
 import { useToast } from "../contexts/toast";
 import { modeKey, modeLabel, modeNote } from "../lib/modes";
@@ -39,7 +38,7 @@ const PANELS: Record<string, { panel: Component<PanelProps>; ownBoard?: boolean 
   TickingClock: { panel: ClockPanel },
 };
 
-// A mode, full screen: its name, the board and its settings. Back goes home.
+// The Mode tab: a mode's name, the board and its settings
 export const ModePage: Component<{ id: number }> = (props) => {
   const [store, actions] = useStore();
   const { toast } = useToast();
@@ -58,20 +57,18 @@ export const ModePage: Component<{ id: number }> = (props) => {
   };
 
   return (
-    <main class="page page-full animate-page-in">
-      <BackBar
-        label={`Mode #${props.id}`}
-        aside={
-          <IconButton
-            name="star"
-            label={isDefault() ? "Starts with the lamp" : "Start with this mode"}
-            pressed={isDefault()}
-            disabled={!active() || isDefault()}
-            class={isDefault() ? "border-signal bg-signal text-on-signal disabled:opacity-100" : ""}
-            onClick={makeDefault}
-          />
-        }
-      />
+    <main class="page animate-fade-in">
+      <div class="flex items-center justify-between gap-3">
+        <span class="label">Mode #{props.id}</span>
+        <IconButton
+          name="star"
+          label={isDefault() ? "Starts with the lamp" : "Start with this mode"}
+          pressed={isDefault()}
+          disabled={!active() || isDefault()}
+          class={isDefault() ? "border-signal bg-signal text-on-signal disabled:opacity-100" : ""}
+          onClick={makeDefault}
+        />
+      </div>
 
       <Show when={plugin()} fallback={<p class="text-muted">Loading modes…</p>}>
         {(mode) => (

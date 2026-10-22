@@ -33,11 +33,11 @@ const App = () => {
 
   const modeId = () => {
     const current = route();
-    return current.page === "mode" ? current.id : undefined;
+    return current.page === "mode" ? (current.id ?? store.plugin) : undefined;
   };
 
-  // pages without the tab bar: a mode and the mode picker
-  const fullScreen = () => route().page === "mode" || route().page === "modes";
+  // the mode picker covers the whole screen, every other page has the tab bar
+  const fullScreen = () => route().page === "modes";
 
   return (
     <>

@@ -17,17 +17,19 @@ document.addEventListener("focusout", (event) => {
 });
 
 const TABS: {
-  page: "home" | "routine" | "settings";
+  page: "home" | "mode" | "routine" | "settings";
   href: string;
   label: string;
   icon: IconName;
 }[] = [
   { page: "home", href: "#/", label: "Home", icon: "home" },
+  // the mode the lamp shows now; the mode picker on Home changes it
+  { page: "mode", href: "#/mode", label: "Mode", icon: "mode" },
   { page: "routine", href: "#/routine", label: "Routine", icon: "routine" },
   { page: "settings", href: "#/settings", label: "Settings", icon: "settings" },
 ];
 
-// the black pill at the bottom; mode pages hide it and show a back button instead
+// the black pill at the bottom; only the mode picker covers it
 export const TabBar: Component = () => (
   <Show when={!typing()}>
     {/* scrolled content fades out under the bar instead of showing around it */}
@@ -38,7 +40,7 @@ export const TabBar: Component = () => (
     />
     <nav
       aria-label="Main"
-      class="fixed inset-x-0 z-30 mx-auto grid max-w-[440px] grid-cols-3 gap-1 rounded-full bg-inverse p-1.5 shadow-lg shadow-black/20"
+      class="fixed inset-x-0 z-30 mx-auto grid max-w-[440px] grid-cols-4 gap-1 rounded-full bg-inverse p-1.5 shadow-lg shadow-black/20"
       style={{
         bottom: "var(--tab-bar-bottom)",
         width: "calc(100% - 2.5rem)",
@@ -49,7 +51,7 @@ export const TabBar: Component = () => (
           <a
             href={tab.href}
             aria-current={route().page === tab.page ? "page" : undefined}
-            class={`flex h-12 items-center justify-center gap-2 rounded-full text-[15px] font-semibold no-underline transition ${
+            class={`flex h-12 min-w-0 items-center justify-center gap-1.5 rounded-full text-[14px] font-semibold no-underline transition ${
               route().page === tab.page ? "bg-ground text-ink" : "text-on-inverse"
             }`}
           >

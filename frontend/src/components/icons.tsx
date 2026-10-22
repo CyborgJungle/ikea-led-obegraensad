@@ -31,6 +31,7 @@ const PATHS = {
   arrowDown: "M12 5v14M6 13l6 6 6-6",
   external: "M7 17L17 7M9 7h8v8",
   home: "M4 11l8-7 8 7v9h-5v-6H9v6H4z",
+  mode: "M5 5h5v5H5zM14 5h5v5h-5zM5 14h5v5H5zM14 14h5v5h-5z",
   routine: "M4 12a8 8 0 0 1 14-5.3M20 12a8 8 0 0 1-14 5.3M18 3v4h-4M6 21v-4h4",
   settings: "M4 7h10M18 7h2M4 17h2M10 17h10M16 4v6M8 14v6",
   sun: "M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5",

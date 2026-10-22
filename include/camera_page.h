@@ -32,7 +32,7 @@ static const char CAMERA_PAGE[] = R"html(<!doctype html>
   html { touch-action: manipulation; -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; margin: 0; }
   /* the document never scrolls or bounces, only the page inside it does */
-  html, body { position: fixed; inset: 0; overflow: hidden; }
+  html, body { overflow: hidden; overscroll-behavior: none; }
   body { background: var(--ground); color: var(--ink); overscroll-behavior: none;
     font: 16px/1.4 -apple-system, "SF Pro Display", system-ui, "Segoe UI", Roboto, sans-serif;
     -webkit-font-smoothing: antialiased; -webkit-user-select: none; user-select: none; }

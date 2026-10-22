@@ -56,15 +56,18 @@ export const DrawPanel: Component<PanelProps> = (props) => {
 
   return (
     <>
-      <LedMatrix
-        class="w-[min(100%,50dvh*9/13)]"
-        disabled={!canDraw()}
-        data={store.leds || []}
-        indexData={rotatedMatrix()}
-        brightness={store.brightness ?? store.baseBrightness ?? 255}
-        onSetLed={(data) => send("led", data)}
-        onSetMatrix={(data) => actions.setLeds([...data])}
-      />
+      {/* the board takes the height that is left, so the tools stay above the tab bar */}
+      <div class="flex min-h-[200px] flex-1 items-center justify-center [container-type:size]">
+        <LedMatrix
+          class="w-[min(100cqw,calc((100cqh_-_1.5rem)*9/13_+_1.5rem))]"
+          disabled={!canDraw()}
+          data={store.leds || []}
+          indexData={rotatedMatrix()}
+          brightness={store.brightness ?? store.baseBrightness ?? 255}
+          onSetLed={(data) => send("led", data)}
+          onSetMatrix={(data) => actions.setLeds([...data])}
+        />
+      </div>
       <Show
         when={canDraw()}
         fallback={

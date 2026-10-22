@@ -91,7 +91,7 @@ export const Home: Component = () => {
         >
           <div class="bar bg-signal pr-3 text-on-signal">
             <a
-              href={active() ? `#/mode/${store.plugin}` : "#/modes"}
+              href={active() ? "#/mode" : "#/modes"}
               class="flex min-w-0 flex-1 flex-col gap-1 text-inherit no-underline"
             >
               <span class="bar-name truncate">{active() ? modeLabel(activeName()) : "…"}</span>
