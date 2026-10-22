@@ -13,6 +13,7 @@ import {
   saveConfig,
 } from "../lib/api";
 import { type Appearance, appearance, setAppearance } from "../lib/theme";
+import { viewportInfo } from "../lib/viewport";
 
 // POSIX TZ strings, the device cannot resolve IANA names like "Europe/Berlin"
 const TIMEZONES = [
@@ -110,6 +111,13 @@ export const Settings: Component = () => {
     }
   };
 
+  // "785/844 · gap 59 · 47/34": viewport/screen height, the gap made up for,
+  // safe area top/bottom as iOS reports them; "web" outside a home screen app
+  const screenLine = () => {
+    const v = viewportInfo();
+    return `${v.viewport}/${v.screen} · gap ${v.gap} · ${v.safeTop}/${v.safeBottom}${v.standalone ? "" : " · web"}`;
+  };
+
   const stats = () => {
     const device = info();
     if (!device) return [];
@@ -120,6 +128,8 @@ export const Settings: Component = () => {
       { label: "Lowest", value: kb(device.minFreeHeap) },
       { label: "IP address", value: device.ipAddress },
       { label: "MAC", value: device.macAddress },
+      // temporary: what iOS gives this app, while the short viewport is sorted out
+      { label: "Screen", value: screenLine() },
     ];
   };
 

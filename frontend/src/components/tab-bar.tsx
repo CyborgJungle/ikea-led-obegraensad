@@ -35,14 +35,18 @@ export const TabBar: Component = () => (
     {/* scrolled content fades out under the bar instead of showing around it */}
     <div
       aria-hidden="true"
-      class="pointer-events-none fixed inset-x-0 bottom-0 z-20 bg-linear-to-t from-ground from-60% to-transparent"
-      style={{ height: "calc(var(--tab-bar-top) + 1.25rem)" }}
+      class="pointer-events-none fixed inset-x-0 z-20 bg-linear-to-t from-ground from-60% to-transparent"
+      style={{
+        bottom: "calc(0px - var(--viewport-gap))",
+        height: "calc(var(--tab-bar-top) + 1.25rem)",
+      }}
     />
     <nav
       aria-label="Main"
       class="fixed inset-x-0 z-30 mx-auto grid max-w-[440px] grid-cols-4 gap-1 rounded-full bg-inverse p-1.5 shadow-lg shadow-black/20"
       style={{
-        bottom: "var(--tab-bar-bottom)",
+        // counted from the screen bottom, below a viewport iOS stopped short
+        bottom: "calc(var(--tab-bar-bottom) - var(--viewport-gap))",
         width: "calc(100% - 2.5rem)",
       }}
     >

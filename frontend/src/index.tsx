@@ -3,6 +3,7 @@ import { render } from "solid-js/web";
 
 import "./index.css";
 import "./lib/theme";
+import "./lib/viewport";
 
 import { Splash } from "./components/splash";
 import { TabBar } from "./components/tab-bar";

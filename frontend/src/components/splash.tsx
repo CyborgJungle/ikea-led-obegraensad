@@ -28,8 +28,13 @@ export const Splash: Component<{ leaving: boolean }> = (props) => {
     <div
       role="status"
       aria-label="Connecting to the lamp"
-      class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0b0b0d] transition-opacity duration-500"
-      style={{ opacity: props.leaving ? 0 : 1, "pointer-events": props.leaving ? "none" : "auto" }}
+      class="fixed inset-x-0 top-0 z-50 flex flex-col items-center justify-center bg-[#0b0b0d] transition-opacity duration-500"
+      style={{
+        // down to the screen bottom, also where iOS stops the viewport short
+        bottom: "calc(0px - var(--viewport-gap))",
+        opacity: props.leaving ? 0 : 1,
+        "pointer-events": props.leaving ? "none" : "auto",
+      }}
     >
       <style>{`
         @keyframes ring-wave {

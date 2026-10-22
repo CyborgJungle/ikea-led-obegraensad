@@ -26,6 +26,9 @@
      clear of the home indicator; 3.75rem tall (see tab-bar.tsx) */
   --tab-bar-bottom: max(0.75rem, calc(var(--safe-bottom) - 0.75rem));
   --tab-bar-top: calc(var(--tab-bar-bottom) + 3.75rem);
+  /* how far iOS stops the viewport short of the screen bottom, measured by
+     lib/viewport.ts; the tab bar values above count from the screen bottom */
+  --viewport-gap: 0px;
 }
 
 :root[data-theme="dark"] {
@@ -150,7 +153,9 @@
 @layer components {
   /* a full screen page: scrolls itself, clears the notch and the home bar */
   .page {
-    @apply mx-auto flex h-dvh w-full max-w-[480px] flex-col gap-5 overflow-y-auto px-5;
+    @apply mx-auto flex w-full max-w-[480px] flex-col gap-5 overflow-y-auto px-5;
+    /* down to the screen bottom, also where iOS stops the viewport short */
+    height: calc(100dvh + var(--viewport-gap));
     padding-top: max(1.25rem, var(--safe-top));
     /* the last card ends a gap above the tab bar */
     padding-bottom: calc(var(--tab-bar-top) + 1.25rem);
