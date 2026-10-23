@@ -42,6 +42,7 @@
 #include "plugins/FireworkPlugin.h"
 #include "plugins/FlappyBirdPlugin.h"
 #include "plugins/GameOfLifePlugin.h"
+#include "plugins/LavaLampPlugin.h"
 #include "plugins/LinesPlugin.h"
 #include "plugins/MatrixRainPlugin.h"
 #include "plugins/MeteorShowerPlugin.h"
@@ -335,6 +336,7 @@ void baseSetup()
 #if defined(ESP32) && defined(ENABLE_SERVER)
   pluginManager.addPlugin(new CameraPlugin());
 #endif
+  pluginManager.addPlugin(new LavaLampPlugin());
 
   Screen.clear();
   pluginManager.init();

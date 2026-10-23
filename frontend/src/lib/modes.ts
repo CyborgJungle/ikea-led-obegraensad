@@ -31,6 +31,7 @@ const INFO: Record<string, { label?: string; group: ModeGroup; note: string }> =
   MatrixRain: { label: "Matrix", group: "ambient", note: "Digital rain" },
   Firework: { group: "ambient", note: "Bursts" },
   Blobs: { group: "ambient", note: "Morphing blobs" },
+  Lavalamp: { group: "ambient", note: "Slow rising wax" },
   Spiral: { group: "ambient", note: "Spinning" },
   Wave: { group: "ambient", note: "Sine wave" },
   Checkerboard: { label: "Checker", group: "ambient", note: "Pattern" },
