@@ -1,7 +1,7 @@
 #pragma once
 
 #include "PluginManager.h"
-#include "timing.h"
+#include "mode_clock.h"
 
 class BouncingBallPlugin : public Plugin
 {
@@ -35,8 +35,8 @@ private:
     LevelEnd
   };
 
-  NonBlockingDelay physicsTimer;
-  NonBlockingDelay fadeTimer;
+  ModeTimer physicsTimer;
+  ModeTimer fadeTimer;
   GameState gameState = GameState::Run;
   float posX = 0.0f;
   float posY = 0.0f;

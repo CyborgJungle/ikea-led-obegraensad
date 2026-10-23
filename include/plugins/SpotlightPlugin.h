@@ -1,7 +1,7 @@
 #pragma once
 
 #include "PluginManager.h"
-#include "timing.h"
+#include "mode_clock.h"
 
 class SpotlightPlugin : public Plugin
 {
@@ -14,7 +14,7 @@ private:
   static constexpr uint8_t POS_MIN = 4;
   static constexpr uint8_t POS_MAX = 11;
 
-  NonBlockingDelay frameTimer;
+  ModeTimer frameTimer;
 
   float hx = 7.5f;
   float hy = 7.5f;

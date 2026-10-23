@@ -336,7 +336,7 @@ void baseSetup()
 #if defined(ESP32) && defined(ENABLE_SERVER)
   pluginManager.addPlugin(new CameraPlugin());
 #endif
-  pluginManager.addPlugin(new LavaLampPlugin());
+  config.adoptLegacyLavaSpeed(pluginManager.addPlugin(new LavaLampPlugin()));
 
   Screen.clear();
   pluginManager.init();

@@ -1,4 +1,5 @@
 #include "plugins/StarsPlugin.h"
+#include "mode_clock.h"
 
 void StarsPlugin::setup()
 {
@@ -8,7 +9,7 @@ void StarsPlugin::setup()
     stars[i].x = random(0, 16);
     stars[i].y = random(0, 16);
     stars[i].brightness = random(255);
-    stars[i].lastUpdateTime = millis();
+    stars[i].lastUpdateTime = modeMillis();
   }
 }
 
@@ -20,7 +21,7 @@ void StarsPlugin::loop()
     {
       if (stars[i].brightness > 0)
       {
-        unsigned long currentTime = millis();
+        unsigned long currentTime = modeMillis();
         if (currentTime - stars[i].lastUpdateTime >= 128)
         {
           stars[i].brightness = max(0, stars[i].brightness - 8);
@@ -50,7 +51,7 @@ void StarsPlugin::loop()
 
         for (int brightness = 0; brightness <= stars[i].brightness; brightness += 5)
         {
-          unsigned long currentTime = millis();
+          unsigned long currentTime = modeMillis();
           if (currentTime - stars[i].lastUpdateTime >= 64)
           {
             Screen.setPixel(stars[i].x, stars[i].y, 1, brightness);

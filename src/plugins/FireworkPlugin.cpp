@@ -1,4 +1,5 @@
 #include "plugins/FireworkPlugin.h"
+#include "mode_clock.h"
 
 void FireworkPlugin::drawExplosion(int x, int y, int maxRadius, int brightness)
 {
@@ -43,7 +44,7 @@ void FireworkPlugin::loop()
   static int rocketX = 0;
   static bool rocketLaunched = false;
 
-  unsigned long currentMillis = millis();
+  unsigned long currentMillis = modeMillis();
 
   if (!rocketLaunched)
   {

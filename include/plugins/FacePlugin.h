@@ -1,7 +1,7 @@
 #pragma once
 
 #include "PluginManager.h"
-#include "timing.h"
+#include "mode_clock.h"
 
 class FacePlugin : public Plugin
 {
@@ -34,15 +34,15 @@ private:
     int8_t y;
   };
 
-  NonBlockingDelay gazeTimer;
-  NonBlockingDelay easeTimer;
-  NonBlockingDelay blinkTimer;
-  NonBlockingDelay blinkEndTimer;
-  NonBlockingDelay exprTimer;
-  NonBlockingDelay exprHoldTimer;
-  NonBlockingDelay mouthTimer;
-  NonBlockingDelay tearSpawnTimer;
-  NonBlockingDelay tearFallTimer;
+  ModeTimer gazeTimer;
+  ModeTimer easeTimer;
+  ModeTimer blinkTimer;
+  ModeTimer blinkEndTimer;
+  ModeTimer exprTimer;
+  ModeTimer exprHoldTimer;
+  ModeTimer mouthTimer;
+  ModeTimer tearSpawnTimer;
+  ModeTimer tearFallTimer;
 
   int8_t gx = 0;
   int8_t gy = 0;

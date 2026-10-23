@@ -26,8 +26,10 @@ private:
   uint8_t scrollSize;
   String boardText;
   uint16_t boardSpeed;
-  // percent of the normal pace, the Lavalamp plugin reads it every frame
-  uint16_t lavaSpeed;
+  // per plugin id, percent of its normal pace (100); the mode clock runs at it
+  uint16_t modeSpeeds[64];
+  // Lavalamp's speed from before every mode had one, waiting to be moved over
+  uint16_t legacyLavaSpeed;
   // bumped on every text change, the Text and Board plugins reload when it differs
   volatile uint32_t textVersion;
   uint16_t countdownSeconds;
@@ -66,7 +68,7 @@ public:
   uint8_t getScrollSize() const;
   String getBoardText() const;
   uint16_t getBoardSpeed() const;
-  uint16_t getLavaSpeed() const { return lavaSpeed; }
+  uint16_t getModeSpeed(int pluginId) const;
   uint32_t getTextVersion() const { return textVersion; }
   uint16_t getCountdownSeconds() const { return countdownSeconds; }
   uint32_t getCountdownRun() const { return countdownRun; }
@@ -86,7 +88,9 @@ public:
   void setScrollSize(int size);
   void setBoardText(const String& text);
   void setBoardSpeed(int speed);
-  void setLavaSpeed(int percent);
+  void setModeSpeed(int pluginId, int percent);
+  // once, at start-up: gives Lavalamp the speed it had under its old key
+  void adoptLegacyLavaSpeed(int pluginId);
   // sets the duration, a running countdown stops and waits for a start
   void setCountdownSeconds(int seconds);
   void startCountdown();
@@ -98,8 +102,10 @@ public:
   static constexpr uint16_t SCROLL_SPEED_MAX = 250;
   enum ScrollSize : uint8_t { SIZE_SMALL, SIZE_MEDIUM, SIZE_LARGE };
   static constexpr size_t BOARD_TEXT_MAX_LENGTH = 500;
-  static constexpr uint16_t LAVA_SPEED_MIN = 50; // percent of the normal pace
-  static constexpr uint16_t LAVA_SPEED_MAX = 400;
+  static constexpr uint16_t MODE_SPEED_MIN = 25; // percent of the normal pace
+  static constexpr uint16_t MODE_SPEED_MAX = 400;
+  static constexpr uint16_t MODE_SPEED_DEFAULT = 100;
+  static constexpr int MODE_SPEED_SLOTS = 64; // plugin ids below this
   static constexpr uint16_t COUNTDOWN_MAX_SECONDS = 5999; // 99:59
   
   // Export to JSON

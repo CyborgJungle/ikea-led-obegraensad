@@ -1,7 +1,7 @@
 #pragma once
 
 #include "PluginManager.h"
-#include "timing.h"
+#include "mode_clock.h"
 
 class FirefliesPlugin : public Plugin
 {
@@ -14,7 +14,7 @@ private:
     float vy;
   };
 
-  NonBlockingDelay timer;
+  ModeTimer timer;
   static constexpr uint8_t kFireflyCount = 10;
   Firefly fireflies[kFireflyCount];
 

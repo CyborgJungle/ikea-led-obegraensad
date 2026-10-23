@@ -1,13 +1,13 @@
 #pragma once
 
 #include "PluginManager.h"
-#include "timing.h"
+#include "mode_clock.h"
 
 class LinesPlugin : public Plugin
 {
 private:
   uint8_t count = 0;
-  NonBlockingDelay timer;
+  ModeTimer timer;
 
 public:
   void setup() override;

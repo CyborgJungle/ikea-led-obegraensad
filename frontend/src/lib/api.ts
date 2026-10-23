@@ -15,8 +15,9 @@ export interface DeviceConfig {
   scrollSize: number;
   boardText: string;
   boardSpeed: number;
-  // percent of the Lavalamp's normal pace; missing on firmware from before it
-  lavaSpeed?: number;
+  // per mode id, percent of its normal pace; only modes not at 100 are listed,
+  // missing on firmware from before it
+  modeSpeed?: Record<string, number>;
   countdownSeconds: number;
   scheduleHoursEnabled: boolean;
   scheduleFrom: string;

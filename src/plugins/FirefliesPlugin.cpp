@@ -22,7 +22,7 @@ void FirefliesPlugin::loop()
 
   Screen.clear();
 
-  float t = static_cast<float>(millis()) / 350.0f;
+  float t = static_cast<float>(modeMillis()) / 350.0f;
   for (uint8_t i = 0; i < kFireflyCount; i++)
   {
     Firefly &firefly = fireflies[i];

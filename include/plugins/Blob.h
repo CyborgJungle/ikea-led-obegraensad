@@ -1,7 +1,7 @@
 #pragma once
 
 #include "PluginManager.h"
-#include "timing.h"
+#include "mode_clock.h"
 #include <cmath>
 #include <cstdlib>
 
@@ -40,7 +40,7 @@ private:
   static constexpr uint16_t UPDATE_INTERVAL_MS = 50;
 
   uint8_t previousBrightness[ROWS * COLS];
-  NonBlockingDelay updateTimer;
+  ModeTimer updateTimer;
 
   float attenuationSquared(float d_sq, float radius_sq) const;
   uint8_t toneMap(float v) const;

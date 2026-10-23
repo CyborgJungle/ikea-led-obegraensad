@@ -1,6 +1,6 @@
 #include "plugins/LavaLampPlugin.h"
-#include "config.h"
 #include "constants.h"
+#include "mode_clock.h"
 #include "screen.h"
 #include <math.h>
 
@@ -36,6 +36,8 @@ constexpr float EDGE_HI = 0.95f;
 constexpr uint8_t FLOOR = 10;
 
 constexpr unsigned long FRAME_MS = 40;
+// the most mode time one frame moves on: 0.1 s at the fastest speed (4x)
+constexpr float MAX_STEP_S = 0.4f;
 constexpr float TWO_PI_F = 6.2831853f;
 
 float randomBetween(float low, float high)
@@ -83,19 +85,24 @@ void LavaLampPlugin::setup()
     w.x = w.home;
   }
   lastFrame = millis();
+  lastModeTime = modeMillis();
 }
 
 void LavaLampPlugin::loop()
 {
+  // frames on real time, so it stays smooth also when slowed down
   const unsigned long now = millis();
   if (now - lastFrame < FRAME_MS)
   {
     return;
   }
-  // after a pause (a busy moment, a message on screen) carry on, do not jump;
-  // the speed setting runs the whole lamp faster or slower, it moves the same way
-  const float dt = fminf((now - lastFrame) / 1000.0f, 0.1f) * config.getLavaSpeed() / 100.0f;
   lastFrame = now;
+  // the wax moves by the mode's clock, so the speed setting runs the whole
+  // lamp faster or slower and it moves the same way; after a pause (a busy
+  // moment, a message on screen) it carries on instead of jumping
+  const uint32_t modeNow = modeMillis();
+  const float dt = fminf((modeNow - lastModeTime) / 1000.0f, MAX_STEP_S);
+  lastModeTime = modeNow;
 
   for (Wax &w : wax)
   {

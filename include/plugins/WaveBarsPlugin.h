@@ -1,12 +1,12 @@
 #pragma once
 
 #include "PluginManager.h"
-#include "timing.h"
+#include "mode_clock.h"
 
 class WaveBarsPlugin : public Plugin
 {
 private:
-  NonBlockingDelay timer;
+  ModeTimer timer;
   float phase = 0.0f;
 
 public:

@@ -75,7 +75,10 @@ void Config::setDefaults()
   scrollSize = SIZE_LARGE;
   boardText = "Menu\nCoffee 3\nTea 2,50";
   boardSpeed = 120;
-  lavaSpeed = 100;
+  for (uint16_t &speed : modeSpeeds) {
+    speed = MODE_SPEED_DEFAULT;
+  }
+  legacyLavaSpeed = 0;
   countdownSeconds = 60;
   scheduleHoursEnabled = false;
   scheduleFrom = "08:00";
@@ -102,7 +105,14 @@ void Config::load()
     setScrollSize(preferences.getUChar("scrollSize", scrollSize));
     setBoardText(preferences.getString("boardText", boardText));
     setBoardSpeed(preferences.getUShort("boardSpeed", boardSpeed));
-    setLavaSpeed(preferences.getUShort("lavaSpeed", lavaSpeed));
+    uint16_t storedSpeeds[MODE_SPEED_SLOTS];
+    if (preferences.getBytesLength("modeSpeeds") == sizeof(storedSpeeds) &&
+        preferences.getBytes("modeSpeeds", storedSpeeds, sizeof(storedSpeeds)) == sizeof(storedSpeeds)) {
+      for (int id = 0; id < MODE_SPEED_SLOTS; id++) {
+        setModeSpeed(id, storedSpeeds[id]);
+      }
+    }
+    legacyLavaSpeed = preferences.getUShort("lavaSpeed", 0);
     countdownSeconds = constrain(preferences.getUShort("countdown", countdownSeconds), 1, COUNTDOWN_MAX_SECONDS);
     setScheduleHours(preferences.getBool("schedHours", scheduleHoursEnabled),
                      preferences.getString("schedFrom", scheduleFrom),
@@ -134,7 +144,7 @@ void Config::save()
     preferences.putUChar("scrollSize", scrollSize);
     preferences.putString("boardText", boardText);
     preferences.putUShort("boardSpeed", boardSpeed);
-    preferences.putUShort("lavaSpeed", lavaSpeed);
+    preferences.putBytes("modeSpeeds", modeSpeeds, sizeof(modeSpeeds));
     preferences.putUShort("countdown", countdownSeconds);
     preferences.putBool("schedHours", scheduleHoursEnabled);
     preferences.putString("schedFrom", scheduleFrom);
@@ -258,9 +268,31 @@ void Config::setBoardSpeed(int speed)
   boardSpeed = constrain(speed, SCROLL_SPEED_MIN, SCROLL_SPEED_MAX);
 }
 
-void Config::setLavaSpeed(int percent)
+uint16_t Config::getModeSpeed(int pluginId) const
 {
-  lavaSpeed = constrain(percent, LAVA_SPEED_MIN, LAVA_SPEED_MAX);
+  return pluginId >= 0 && pluginId < MODE_SPEED_SLOTS ? modeSpeeds[pluginId] : MODE_SPEED_DEFAULT;
+}
+
+void Config::setModeSpeed(int pluginId, int percent)
+{
+  if (pluginId >= 0 && pluginId < MODE_SPEED_SLOTS) {
+    modeSpeeds[pluginId] = constrain(percent, MODE_SPEED_MIN, MODE_SPEED_MAX);
+  }
+}
+
+void Config::adoptLegacyLavaSpeed(int pluginId)
+{
+  if (legacyLavaSpeed == 0) {
+    return;
+  }
+  setModeSpeed(pluginId, legacyLavaSpeed);
+  legacyLavaSpeed = 0;
+#ifdef ENABLE_STORAGE
+  if (storageAvailable) {
+    preferences.remove("lavaSpeed");
+  }
+#endif
+  save();
 }
 
 void Config::setCountdownSeconds(int seconds)
@@ -305,7 +337,13 @@ String Config::toJson() const
   doc["scrollSize"] = scrollSize;
   doc["boardText"] = boardText;
   doc["boardSpeed"] = boardSpeed;
-  doc["lavaSpeed"] = lavaSpeed;
+  // only the modes not at their normal pace: {"45": 150}
+  JsonObject speeds = doc["modeSpeed"].to<JsonObject>();
+  for (int id = 0; id < MODE_SPEED_SLOTS; id++) {
+    if (modeSpeeds[id] != MODE_SPEED_DEFAULT) {
+      speeds[String(id)] = modeSpeeds[id];
+    }
+  }
   doc["countdownSeconds"] = countdownSeconds;
   doc["scheduleHoursEnabled"] = scheduleHoursEnabled;
   doc["scheduleFrom"] = scheduleFrom;
@@ -379,8 +417,13 @@ bool Config::fromJson(const String& json)
     setBoardSpeed(doc["boardSpeed"].as<int>());
   }
 
-  if (doc["lavaSpeed"].is<int>()) {
-    setLavaSpeed(doc["lavaSpeed"].as<int>());
+  // {"modeSpeed": {"45": 150}}: percent per plugin id
+  if (doc["modeSpeed"].is<JsonObjectConst>()) {
+    for (JsonPairConst speed : doc["modeSpeed"].as<JsonObjectConst>()) {
+      if (speed.value().is<int>()) {
+        setModeSpeed(atoi(speed.key().c_str()), speed.value().as<int>());
+      }
+    }
   }
 
   // duration first, so {"countdownSeconds": 30, "countdownStart": true} starts 30 s

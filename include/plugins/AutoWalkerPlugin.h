@@ -1,7 +1,7 @@
 #pragma once
 
 #include "PluginManager.h"
-#include "timing.h"
+#include "mode_clock.h"
 
 class AutoWalkerPlugin : public Plugin
 {
@@ -27,9 +27,9 @@ private:
     FADE
   };
 
-  NonBlockingDelay stepTimer;
-  NonBlockingDelay holdTimer;
-  NonBlockingDelay fadeTimer;
+  ModeTimer stepTimer;
+  ModeTimer holdTimer;
+  ModeTimer fadeTimer;
 
   WalkerState state = RUN;
   uint8_t counts[Y_MAX][X_MAX] = {};

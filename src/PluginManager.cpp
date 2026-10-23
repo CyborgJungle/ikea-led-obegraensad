@@ -1,4 +1,6 @@
 #include "PluginManager.h"
+#include "config.h"
+#include "mode_clock.h"
 #include "scheduler.h"
 #ifdef ESP32
 #include <mutex>
@@ -176,6 +178,9 @@ void PluginManager::setupActivePlugin()
 void PluginManager::runActivePlugin()
 {
   PLUGIN_GUARD;
+  // the mode's clock runs at its speed setting, also while it is not drawing
+  advanceModeClock(activePlugin ? config.getModeSpeed(activePlugin->getId())
+                                : Config::MODE_SPEED_DEFAULT);
   if (activePlugin && currentStatus != UPDATE && currentStatus != LOADING &&
       currentStatus != WSBINARY)
   {

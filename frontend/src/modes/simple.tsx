@@ -52,52 +52,6 @@ export const CameraPanel: Component<PanelProps> = (props) => {
   );
 };
 
-// must match Config::LAVA_SPEED_MIN/MAX on the device, percent of the normal pace
-const LAVA_SPEED_MIN = 50;
-const LAVA_SPEED_MAX = 400;
-
-// Lavalamp: how fast the wax moves; saved on the lamp when the slider is let go
-export const LavaPanel: Component<PanelProps> = () => {
-  const { toast } = useToast();
-  const [speed, setSpeed] = createSignal(100);
-  onMount(async () => {
-    try {
-      setSpeed((await getConfig()).lavaSpeed ?? 100);
-    } catch {
-      // the default will do
-    }
-  });
-  const save = async (value: number) => {
-    try {
-      await saveConfig({ lavaSpeed: value });
-    } catch {
-      toast("Could not reach the lamp", 2000);
-    }
-  };
-  return (
-    <Section
-      title="Speed"
-      aside={
-        <span class="text-[13px] font-semibold tabular-nums">{(speed() / 100).toFixed(1)}×</span>
-      }
-    >
-      <Slider
-        label="Speed"
-        min={LAVA_SPEED_MIN}
-        max={LAVA_SPEED_MAX}
-        step={10}
-        value={speed()}
-        onInput={setSpeed}
-        onCommit={save}
-      />
-      <div class="flex justify-between text-[12px] text-faint">
-        <span>Slow</span>
-        <span>Fast</span>
-      </div>
-    </Section>
-  );
-};
-
 // Game of Life: time between generations
 export const LifePanel: Component<PanelProps> = () => {
   const [store, actions] = useStore();

@@ -1,12 +1,12 @@
 #pragma once
 
 #include "PluginManager.h"
-#include "timing.h"
+#include "mode_clock.h"
 
 class MatrixRainPlugin : public Plugin
 {
 private:
-  NonBlockingDelay timer;
+  ModeTimer timer;
   static constexpr uint8_t NUM_COLUMNS = 16;
   static constexpr uint8_t HEIGHT = 16;
   static constexpr uint8_t MAX_TRAIL_LENGTH = 8;

@@ -1,13 +1,13 @@
 #pragma once
 
 #include "PluginManager.h"
-#include "timing.h"
+#include "mode_clock.h"
 
 class CirclePlugin : public Plugin
 {
 private:
   uint8_t circleStep = 0;
-  NonBlockingDelay timer;
+  ModeTimer timer;
 
 public:
   void setup() override;

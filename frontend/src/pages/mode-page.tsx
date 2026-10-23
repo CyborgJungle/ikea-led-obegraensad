@@ -4,7 +4,7 @@ import { Dynamic } from "solid-js/web";
 import { Icon, IconButton } from "../components/icons";
 import { useStore } from "../contexts/store";
 import { useToast } from "../contexts/toast";
-import { modeKey, modeLabel, modeNote } from "../lib/modes";
+import { modeGroup, modeKey, modeLabel, modeNote } from "../lib/modes";
 import { AnimationPanel } from "../modes/animation";
 import { CountdownPanel } from "../modes/countdown";
 import { DrawPanel } from "../modes/draw";
@@ -14,10 +14,10 @@ import {
   CameraPanel,
   ClockPanel,
   DdpPanel,
-  LavaPanel,
   LifePanel,
   WeatherPanel,
 } from "../modes/simple";
+import { SpeedPanel } from "../modes/speed";
 import { BoardPanel, TextPanel } from "../modes/text";
 import { LivePreview } from "./home";
 
@@ -33,7 +33,6 @@ const PANELS: Record<string, { panel: Component<PanelProps>; ownBoard?: boolean 
   ArtNet: { panel: ArtNetPanel },
   DDP: { panel: DdpPanel },
   Weather: { panel: WeatherPanel },
-  Lavalamp: { panel: LavaPanel },
   BigClock: { panel: ClockPanel },
   Clock: { panel: ClockPanel },
   PongClock: { panel: ClockPanel },
@@ -50,6 +49,9 @@ export const ModePage: Component<{ id: number }> = (props) => {
   const isDefault = () => store.persistedPlugin === props.id;
   const name = () => plugin()?.name ?? "";
   const entry = () => PANELS[modeKey(name())];
+  // ambient modes run on the lamp's mode clock, which has a speed; Life has
+  // its own generation time instead
+  const hasSpeed = () => modeGroup(name()) === "ambient" && modeKey(name()) !== "GameOfLife";
 
   const activate = () => actions.send(JSON.stringify({ event: "plugin", plugin: props.id }));
 
@@ -97,12 +99,18 @@ export const ModePage: Component<{ id: number }> = (props) => {
               </div>
             </Show>
 
+            <Show when={hasSpeed()}>
+              <SpeedPanel modeId={props.id} />
+            </Show>
+
             <Show
               when={entry()}
               fallback={
-                <p class="m-0 text-center text-[15px] text-muted">
-                  Nothing to set here, it runs by itself.
-                </p>
+                <Show when={!hasSpeed()}>
+                  <p class="m-0 text-center text-[15px] text-muted">
+                    Nothing to set here, it runs by itself.
+                  </p>
+                </Show>
               }
             >
               {(found) => (

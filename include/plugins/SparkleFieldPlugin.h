@@ -1,12 +1,12 @@
 #pragma once
 
 #include "PluginManager.h"
-#include "timing.h"
+#include "mode_clock.h"
 
 class SparkleFieldPlugin : public Plugin
 {
 private:
-  NonBlockingDelay timer;
+  ModeTimer timer;
   uint8_t sparkles[16][16] = {};
 
 public:

@@ -1,12 +1,12 @@
 #pragma once
 
 #include "PluginManager.h"
-#include "timing.h"
+#include "mode_clock.h"
 
 class ScanlinesPlugin : public Plugin
 {
 private:
-  NonBlockingDelay timer;
+  ModeTimer timer;
   float position = 0.0f;
   float speed = 0.4f;
 

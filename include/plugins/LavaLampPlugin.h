@@ -30,6 +30,7 @@ private:
 
   Wax wax[NUM_WAX];
   unsigned long lastFrame = 0;
+  uint32_t lastModeTime = 0;
   uint8_t previousBrightness[ROWS * COLS];
 
   void step(Wax &w, float dt);

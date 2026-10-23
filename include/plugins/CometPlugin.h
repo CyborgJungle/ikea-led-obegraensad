@@ -1,12 +1,12 @@
 #pragma once
 
 #include "PluginManager.h"
-#include "timing.h"
+#include "mode_clock.h"
 
 class CometPlugin : public Plugin
 {
 private:
-  NonBlockingDelay timer;
+  ModeTimer timer;
   float x = 0.0f;
   float y = 0.0f;
   float vx = 0.8f;

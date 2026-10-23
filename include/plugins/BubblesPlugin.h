@@ -1,7 +1,7 @@
 #pragma once
 
 #include "PluginManager.h"
-#include "timing.h"
+#include "mode_clock.h"
 
 class BubblesPlugin : public Plugin
 {
@@ -15,7 +15,7 @@ private:
     uint8_t brightness;
   };
 
-  NonBlockingDelay timer;
+  ModeTimer timer;
   static constexpr uint8_t kBubbleCount = 6;
   Bubble bubbles[kBubbleCount];
 

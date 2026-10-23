@@ -1,7 +1,7 @@
 #pragma once
 
 #include "PluginManager.h"
-#include "timing.h"
+#include "mode_clock.h"
 
 class FallingSandPlugin : public Plugin
 {
@@ -24,10 +24,10 @@ private:
     DRAINING
   };
 
-  NonBlockingDelay tickTimer;
-  NonBlockingDelay spawnTimer;
-  NonBlockingDelay drainTimer;
-  NonBlockingDelay wanderTimer;
+  ModeTimer tickTimer;
+  ModeTimer spawnTimer;
+  ModeTimer drainTimer;
+  ModeTimer wanderTimer;
 
   SandState state = SPAWNING;
   uint8_t amount[GRID_SIZE][GRID_SIZE];

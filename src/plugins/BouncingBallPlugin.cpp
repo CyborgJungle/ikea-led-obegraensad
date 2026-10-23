@@ -55,7 +55,7 @@ void BouncingBallPlugin::spawnBall()
   velY = 0.0f;
   float speed = random(18, 41) / 100.0f;
   velX = (random(0, 2) == 0) ? speed : -speed;
-  levelStartTime = millis();
+  levelStartTime = modeMillis();
 }
 
 void BouncingBallPlugin::handleObstacleCollisions(uint8_t cellX, uint8_t cellY)
@@ -91,7 +91,7 @@ void BouncingBallPlugin::handleObstacleCollisions(uint8_t cellX, uint8_t cellY)
 
 void BouncingBallPlugin::runPhysicsTick()
 {
-  float gravity = (millis() - levelStartTime > GRAVITY_BOOST_AFTER_MS) ? BOOSTED_GRAVITY : GRAVITY;
+  float gravity = (modeMillis() - levelStartTime > GRAVITY_BOOST_AFTER_MS) ? BOOSTED_GRAVITY : GRAVITY;
   for (uint8_t substep = 0; substep < SUBSTEPS; substep++)
   {
     velY += gravity;
@@ -174,7 +174,7 @@ void BouncingBallPlugin::loop()
       runPhysicsTick();
       render();
     }
-    if (gameState == GameState::Run && millis() - levelStartTime > LEVEL_TIMEOUT_MS)
+    if (gameState == GameState::Run && modeMillis() - levelStartTime > LEVEL_TIMEOUT_MS)
     {
       gameState = GameState::LevelEnd;
     }
