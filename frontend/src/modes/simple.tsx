@@ -112,6 +112,15 @@ export const ArtNetPanel: Component<PanelProps> = () => {
   );
 };
 
+// Clouds: where its data comes from, with the credit EUMETSAT asks for
+export const CloudsPanel: Component<PanelProps> = () => (
+  <p class="m-0 text-[13px] text-muted">
+    Every 10 minutes the lamp fetches the newest infrared satellite image of the sky around
+    Amsterdam: where it is cloudy the texture thickens, and it drifts with the real wind. Meteosat
+    data © EUMETSAT.
+  </p>
+);
+
 // DDP: streams frames from LED software like xLights or LedFx
 export const DdpPanel: Component<PanelProps> = () => {
   const ip = useLampIp();

@@ -32,6 +32,7 @@ const INFO: Record<string, { label?: string; group: ModeGroup; note: string }> =
   Firework: { group: "ambient", note: "Bursts" },
   Blobs: { group: "ambient", note: "Morphing blobs" },
   Lavalamp: { group: "ambient", note: "Slow rising wax" },
+  Clouds: { group: "ambient", note: "Steered by the live sky" },
   Spiral: { group: "ambient", note: "Spinning" },
   Wave: { group: "ambient", note: "Sine wave" },
   Checkerboard: { label: "Checker", group: "ambient", note: "Pattern" },

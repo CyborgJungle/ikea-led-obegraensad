@@ -31,6 +31,9 @@
 #include "plugins/BreakoutPlugin.h"
 #include "plugins/BubblesPlugin.h"
 #include "plugins/CheckerboardPlugin.h"
+#ifdef ESP32
+#include "plugins/CloudsPlugin.h"
+#endif
 #include "plugins/CirclePlugin.h"
 #include "plugins/CometPlugin.h"
 #include "plugins/CountdownPlugin.h"
@@ -337,6 +340,9 @@ void baseSetup()
   pluginManager.addPlugin(new CameraPlugin());
 #endif
   config.adoptLegacyLavaSpeed(pluginManager.addPlugin(new LavaLampPlugin()));
+#ifdef ESP32
+  pluginManager.addPlugin(new CloudsPlugin());
+#endif
 
   Screen.clear();
   pluginManager.init();
