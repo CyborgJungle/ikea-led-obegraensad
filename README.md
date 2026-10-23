@@ -1,19 +1,30 @@
-<!-- markdownlint-disable MD024 -->
+<!-- markdownlint-disable MD024 MD033 -->
 
-# IKEA OBEGRÄNSAD Hack/Mod
+# OBEGRÄNSAD Live
 
-Turn your OBEGRÄNSAD LED Wall Lamp into a live drawing canvas
+A fork of [ph1p/ikea-led-obegraensad](https://github.com/ph1p/ikea-led-obegraensad), the ESP32 mod that turns the IKEA OBEGRÄNSAD LED wall lamp into a 16×16 canvas you control over WiFi. This fork keeps the original's firmware and hardware setup, and adds **its own app design** and **new modes**.
+
+> **This is a fork.** The hardware hack, the firmware base and most modes come from [Philip Stapelfeldt (ph1p)](https://github.com/ph1p) and the contributors of the original project, under its [MIT license](LICENSE). What is new here is listed under [What this fork adds](#what-this-fork-adds). Bug fixes that also belong in the original are welcome there.
 
 > **⚠ Disclaimer**: Use this code and instructions at your own risk! Improper use may damage the device.
-> **Contribute**: Have suggestions or improvements? Feel free to submit a PR or open an issue. 😊
 
-![ezgif-3-2019fca7a4](https://user-images.githubusercontent.com/15351728/200184222-a590575d-983d-4ab8-a322-c6bcf433d364.gif)
+<p>
+  <img src="docs/app-home.png" width="24%" alt="Home: the live lamp, the mode that is showing, brightness" />
+  <img src="docs/app-mode.png" width="24%" alt="Mode: Lavalamp with its speed slider" />
+  <img src="docs/app-modes.png" width="24%" alt="The mode picker: every mode as a colour bar, in groups" />
+  <img src="docs/app-splash.png" width="24%" alt="The start-up screen while the app connects to the lamp" />
+</p>
 
 ## Table of Contents
 
-- [IKEA OBEGRÄNSAD Hack/Mod](#ikea-obegränsad-hackmod)
+- [OBEGRÄNSAD Live](#obegränsad-live)
   - [Table of Contents](#table-of-contents)
-  - [Features](#features)
+  - [What this fork adds](#what-this-fork-adds)
+    - [A new app design](#a-new-app-design)
+    - [New modes](#new-modes)
+    - [Speed for every ambient mode](#speed-for-every-ambient-mode)
+    - [Other changes](#other-changes)
+  - [All modes](#all-modes)
   - [Quick Start](#quick-start)
   - [Hardware Setup](#hardware-setup)
     - [Opening the Lamp](#opening-the-lamp)
@@ -36,6 +47,7 @@ Turn your OBEGRÄNSAD LED Wall Lamp into a live drawing canvas
       - [Set Brightness](#set-brightness)
       - [Scheduled Brightness](#scheduled-brightness)
       - [Get Display Data](#get-display-data)
+    - [Settings](#settings)
     - [Message Display](#message-display)
       - [Display a Message](#display-a-message)
       - [Remove a Message](#remove-a-message)
@@ -65,59 +77,68 @@ Turn your OBEGRÄNSAD LED Wall Lamp into a live drawing canvas
     - [Flickering Panel](#flickering-panel)
     - [Microcontroller is stuck in boot loop / flickering panel / black panel](#microcontroller-is-stuck-in-boot-loop--flickering-panel--black-panel)
 
-## Features
+## What this fork adds
 
-<details>
-  <summary>Click to expand feature list</summary>
+### A new app design
 
-**General Features:**
+The web app the lamp serves is redesigned from scratch, made to be added to an iPhone home screen and used like an app.
 
-- Persist your drawing
-- Rotate image
-- Live Drawing
-- OTA Update
-- WiFi Control
-- Web GUI
-- Load an image
-- Switch plugin by pressing the button
-- Schedule Plugins to switch after "n" seconds
-- Schedule different brightness for time frame
+- **Four tabs.** **Home** shows the lamp live, the mode that is showing and the brightness. **Mode** is the mode on the lamp with its own settings. **Routine** plays modes in turn, with night dimming and set hours. **Settings** holds appearance, rotation, the device's state, time zone and weather location.
+- **A mode picker** with every mode as a big colour bar, grouped into *Make your own*, *Time & weather*, *Ambient*, *Games* and *Connect*. Picking one switches the lamp and opens it in the Mode tab.
+- **Built for the phone.** Every page fits an iPhone 13 screen without scrolling where it can (the lamp preview gives way to the controls). The tab bar stays put, steps aside while you type, and sits right even when iOS gives a home screen app a shorter screen than the phone has. There is no swipe-back between pages, the app's own buttons do that.
+- **Its own look** in light and dark, following the phone or set by hand: warm greys with an orange accent, large bold type and soft LED previews.
+- **Always in step with the lamp.** A mode or brightness change from anywhere (the app, the button, a routine, or a home automation calling the [HTTP API](#http-api-reference)) shows in every open app.
+- **A start-up screen** of glowing rings while the app connects, and an app icon for the home screen.
 
-**Available Plugins:**
+### New modes
 
-- Draw
-- Game of Life
-- Breakout
-- Snake
-- Stars
-- Lines
-- Circle
-- Clock
-- Big Clock
-- Weather
-- Rain
-- Animation (with Animation Creator in Web UI)
-- Firework
-- DDP (Display Data Protocol)
-- Pong Clock
-- BigPong
-- Auto Walker
-- Bouncing Ball
-- Face
-- Falling Sand
-- Flappy Bird
-- Space Invaders
-- Spotlight
-- Tetris
-- Tron
+| Mode | What it does |
+| :--- | :--- |
+| **Lavalamp** (mode 45) | A lava lamp: wax resting on the bottom heats up, swells and rises slowly, cools near the top and sinks back. Soft, glowing edges like Blobs, but driven by temperature instead of bouncing; one trip up and down takes about a minute. |
+| **Clouds** (mode 46) | An endless, abstract cloud texture **steered by the real sky**. Every 10 minutes the lamp fetches the newest infrared satellite image of the area around Amsterdam (Meteosat, EUMETSAT, no account needed): where it is cloudy the texture thickens, and it drifts in the direction the real clouds move. It never repeats. Works day and night. *Meteosat data © EUMETSAT.* |
+| **Text** (mode 41) | Scrolling text in three sizes, with letters, €, accents and umlauts in readable pixel fonts. |
+| **Board** (mode 42) | A menu board: text that stands still in the largest size that fits, or scrolls up line by line like a reader when it is longer. |
+| **Timer** (mode 43) | A countdown with presets from 10 s to 5 min, started from the app, digits centred on the lamp, rings rippling out when it is done. |
+| **Camera** (mode 44) | Your phone's camera live on the lamp in 16×16 greyscale, with brightness, contrast, front/back and invert. Runs on the lamp's own HTTPS page, since phones only allow the camera on secure pages; the app walks you through trusting the lamp once. |
 
-</details>
+<p>
+  <img src="docs/mode-lavalamp.png" width="100%" alt="Lavalamp on the lamp, a frame every 8 seconds: wax rising from the bottom and sinking back" />
+</p>
+<p>
+  <img src="docs/mode-clouds.png" width="100%" alt="Clouds: the Meteosat infrared image of the area, and the lamp's soft clouds drifting through it" />
+</p>
+
+The new modes are added at the end of the list, so every mode of the original keeps its number (saved start-up modes, routines and home automations keep working).
+
+### Speed for every ambient mode
+
+Every ambient mode has a **Speed** slider on its page, from 0.25× to 4× with 1× in the middle, kept per mode on the lamp. The lamp runs each mode on its own clock at that speed, so a mode moves the same way, only slower or faster.
+
+### Other changes
+
+- **Readable pixel fonts** (Spleen, X11, m5x7) for text on the lamp.
+- **An HTTPS server** for the camera page, with its own certificate authority that a phone installs once.
+- **Stability:** fixes for a task watchdog reset, the camera server's memory use, and brownouts when many LEDs are bright at once.
+- **Firmware updates over WiFi** reworked: the original's update web page (ElegantOTA) is replaced by a password-protected upload from PlatformIO, checked before the lamp switches to it (see [OTA Updates](#ota-updates)).
+- Set up for an **ESP32-S3 DevKitC-1** by default.
+
+## All modes
+
+46 modes on an ESP32, in the groups of the app's mode picker. Modes marked *new* are added by this fork; the rest come from the original.
+
+- **Make your own:** Draw, Animation (with an animation creator in the app), Text *new*, Board *new*, Camera *new*
+- **Time & weather:** Big Clock, Clock, Pong Clock, Ticking Clock, Weather, Timer *new*
+- **Ambient** (each with a speed slider; Game of Life has its own generation time): Game of Life, Stars, Lines, Circle, Rain, Matrix Rain, Firework, Blobs, Lavalamp *new*, Clouds *new*, Spiral, Wave, Checkerboard, Radar, Bubbles, Comet, Fireflies, Meteor Shower, Scanlines, Sparkle Field, Wave Bars, Spotlight, Face, Falling Sand, Bouncing Ball, Auto Walker
+- **Games** (playing themselves): Breakout, Snake, Tetris, Flappy Bird, Space Invaders, BigPong, Tron
+- **Connect:** DDP (port 4048), Art-Net (port 6454)
+
+From the original, the firmware also keeps: drawings that persist, image rotation, switching modes with the lamp's button, playing modes in turn, dimming at set times and firmware updates over WiFi.
 
 ## Quick Start
 
-https://github.com/user-attachments/assets/ddf91be1-2c95-4adc-b178-05b0781683cc
+Flash the firmware (see [Software Setup](#software-setup)), let the lamp join your WiFi, then open its address in a browser, for example `http://ikea-led.local`. On an iPhone, use Safari's Share › Add to Home Screen to use it like an app.
 
-Control the lamp using the built-in web GUI. Find the device IP address via:
+Find the device IP address via:
 
 - Serial monitor output
 - Router admin panel
@@ -190,7 +211,7 @@ You can use the original button wiring without adding external connections. See 
 2. **Clone the Project**
 
    ```bash
-   git clone git@github.com:ph1p/ikea-led-obegraensad.git
+   git clone git@github.com:CyborgJungle/ikea-led-obegraensad.git
    cd ikea-led-obegraensad
    code .
    ```
@@ -456,6 +477,34 @@ curl http://your-server/api/data
 [255, 255, 255, 0, 128, 255, 255, 0, ...]
 ```
 
+### Settings
+
+*Added in this fork.* The settings of the modes and the device, kept on the lamp. The app uses these for Text, Board, Timer, the speed sliders, the routine's hours and the time and weather settings.
+
+```http
+GET /api/config
+POST /api/config
+Content-Type: application/json
+POST /api/config/reset
+```
+
+`POST` changes only the keys it is sent:
+
+| Key | Value |
+| :-- | :-- |
+| `weatherLocation`, `ntpServer`, `tzInfo` | City for Weather, time server, POSIX time zone |
+| `scrollText`, `scrollSpeed`, `scrollSize` | Text: up to 200 characters, ms per pixel (20-250), size `0`-`2` |
+| `boardText`, `boardSpeed` | Board: up to 500 characters, reader speed |
+| `countdownSeconds`, `countdownStart`, `countdownReset` | Timer: 1-5999 seconds, `true` starts or resets it |
+| `modeSpeed` | Speed per mode id in percent (25-400), e.g. `{"45": 150}` runs Lavalamp at 1.5×; `GET` lists only the modes not at 100 |
+| `autoStartSchedule`, `scheduleHoursEnabled`, `scheduleFrom`, `scheduleTo` | Routine: start with the lamp, and only between `HH:MM` and `HH:MM` |
+
+**Example:** run Clouds (mode 46) at half speed
+
+```bash
+curl -X POST http://your-server/api/config -H "Content-Type: application/json" -d '{"modeSpeed": {"46": 50}}'
+```
+
 ---
 
 ### Message Display
@@ -584,7 +633,7 @@ poetry run python ddp.py clear
 1. **Enable DDP Plugin**
 
    ```bash
-   curl -X PATCH "http://your-server/api/plugin?id=17"
+   curl -X PATCH "http://your-server/api/plugin?id=39"   # DDP is #39 on an ESP32 in this fork
    ```
 
 2. **Send Pixels**
