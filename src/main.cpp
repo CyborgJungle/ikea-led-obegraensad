@@ -230,6 +230,9 @@ void pressHandler(BfButton *btn, BfButton::press_pattern_t pattern)
     if (currentStatus != LOADING)
     {
       pluginManager.activatePersistedPlugin();
+#ifdef ENABLE_SERVER
+      sendInfo();
+#endif
     }
     break;
   }

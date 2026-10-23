@@ -176,6 +176,8 @@ void handleSetPlugin(AsyncWebServerRequest *request)
 
   if (pluginManager.getActivePlugin() && pluginManager.getActivePlugin()->getId() == id)
   {
+    // open apps show the new mode, like after a change from the app itself
+    sendInfo();
     sendJsonSuccess(request, "Plugin set successfully");
   }
   else
@@ -203,6 +205,7 @@ void handleSetBrightness(AsyncWebServerRequest *request)
 
   Screen.setBaseBrightness(value, true);
   ScheduledBrightness.update();
+  sendInfo();
   sendJsonSuccess(request, "Brightness set successfully");
 }
 

@@ -18,6 +18,7 @@
 #include "plugins/CameraPlugin.h"
 #include "scheduler.h"
 #include "secrets.h"
+#include "websocket.h"
 #include "timing.h"
 
 namespace
@@ -419,6 +420,8 @@ esp_err_t handleCameraSocket(httpd_req_t *request)
   {
     Scheduler.clearSchedule();
     pluginManager.setActivePlugin("Camera");
+    // the lamp app, open on another phone or tab, shows Camera too
+    sendInfo();
   }
   return ESP_OK;
 }
