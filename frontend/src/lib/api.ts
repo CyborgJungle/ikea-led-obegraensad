@@ -15,6 +15,8 @@ export interface DeviceConfig {
   scrollSize: number;
   boardText: string;
   boardSpeed: number;
+  // percent of the Lavalamp's normal pace; missing on firmware from before it
+  lavaSpeed?: number;
   countdownSeconds: number;
   scheduleHoursEnabled: boolean;
   scheduleFrom: string;

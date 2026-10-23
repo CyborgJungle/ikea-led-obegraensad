@@ -2,10 +2,10 @@
 
 #include "PluginManager.h"
 
-// A lava lamp: wax heats up in a pool at the bottom, swells and rises slowly,
-// cools near the top and sinks back to melt into the pool. Drawn like Blobs,
-// as one field of soft blobs that melt together at their edges, but moved by
-// temperature: a round trip takes over a minute.
+// A lava lamp: wax resting on the bottom heats up, swells and rises slowly,
+// cools near the top and sinks back down. Drawn like Blobs, as one field of
+// soft blobs that melt together at their edges, but moved by temperature: a
+// round trip takes about a minute, faster or slower with the speed setting.
 class LavaLampPlugin : public Plugin
 {
 public:
@@ -29,9 +29,6 @@ private:
   static constexpr uint8_t NUM_WAX = 4;
 
   Wax wax[NUM_WAX];
-  // the heaving of the pool surface, radians
-  float poolPhaseA = 0;
-  float poolPhaseB = 0;
   unsigned long lastFrame = 0;
   uint8_t previousBrightness[ROWS * COLS];
 

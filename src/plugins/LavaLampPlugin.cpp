@@ -1,4 +1,5 @@
 #include "plugins/LavaLampPlugin.h"
+#include "config.h"
 #include "constants.h"
 #include "screen.h"
 #include <math.h>
@@ -10,7 +11,7 @@ namespace
 constexpr float ASPECT = 1.5f;
 constexpr float Y_MAX = ROWS * ASPECT;
 
-// wax this close to the bottom sits on the heater and warms up
+// wax resting on the bottom, or this close above it, sits on the heater and warms up
 constexpr float HEAT_DEPTH = 1.6f;
 constexpr float HEAT = 0.22f; // per second
 // cooling per second: little low down, up to seven times as much at the cold top
@@ -23,9 +24,8 @@ constexpr float VISCOSITY = 1.2f;
 constexpr float WOBBLE = 0.06f; // sideways drift, radians per second
 constexpr float DRIFT = 2.5f;   // columns either side of home
 
-// warm wax always lying on the bottom, its surface slowly heaving
-constexpr float POOL = 3.8f;
-constexpr float POOL_HEAVE = 1.4f;
+// wax rests against the bottom and the top this far in, as a part of its radius
+constexpr float REST = 0.6f;
 // moving wax gets taller and thinner, per unit per second
 constexpr float STRETCH = 0.45f;
 
@@ -82,8 +82,6 @@ void LavaLampPlugin::setup()
     w.vy = 0;
     w.x = w.home;
   }
-  poolPhaseA = randomBetween(0, TWO_PI_F);
-  poolPhaseB = randomBetween(0, TWO_PI_F);
   lastFrame = millis();
 }
 
@@ -94,23 +92,23 @@ void LavaLampPlugin::loop()
   {
     return;
   }
-  // after a pause (a busy moment, a message on screen) carry on, do not jump
-  const float dt = fminf((now - lastFrame) / 1000.0f, 0.1f);
+  // after a pause (a busy moment, a message on screen) carry on, do not jump;
+  // the speed setting runs the whole lamp faster or slower, it moves the same way
+  const float dt = fminf((now - lastFrame) / 1000.0f, 0.1f) * config.getLavaSpeed() / 100.0f;
   lastFrame = now;
 
   for (Wax &w : wax)
   {
     step(w, dt);
   }
-  poolPhaseA = wrap(poolPhaseA + 0.11f * dt);
-  poolPhaseB = wrap(poolPhaseB + 0.05f * dt);
   render();
 }
 
 void LavaLampPlugin::step(Wax &w, float dt)
 {
   const float height = w.y / Y_MAX; // 0 at the top, 1 at the bottom
-  const float heat = w.y > Y_MAX - HEAT_DEPTH ? w.heat : 0;
+  const float rest = radius(w.size, w.temperature) * REST;
+  const float heat = w.y > Y_MAX - rest - HEAT_DEPTH ? w.heat : 0;
   const float above = 1 - height;
   const float cool = COOL * (1 + 6 * above * above * above * above);
   w.temperature = fmaxf(0, fminf(1.2f, w.temperature + (heat - cool * w.temperature) * dt));
@@ -120,16 +118,15 @@ void LavaLampPlugin::step(Wax &w, float dt)
   w.vy += (target - w.vy) * fminf(1.0f, dt / VISCOSITY);
   w.y += w.vy * dt;
 
-  // resting in the pool, or pressed against the top cap
-  if (w.y > Y_MAX - 0.5f)
+  // resting on the bottom, or pressed against the top cap
+  if (w.y > Y_MAX - rest)
   {
-    w.y = Y_MAX - 0.5f;
+    w.y = Y_MAX - rest;
     w.vy = fminf(w.vy, 0);
   }
-  const float top = radius(w.size, w.temperature) * 0.6f;
-  if (w.y < top)
+  if (w.y < rest)
   {
-    w.y = top;
+    w.y = rest;
     w.vy = fmaxf(w.vy, 0);
   }
 
@@ -149,18 +146,9 @@ void LavaLampPlugin::render()
     ry2[i] = r * r * s * s;
   }
 
-  // the pool surface per column
-  float pool[COLS];
-  for (uint8_t col = 0; col < COLS; col++)
-  {
-    const float x = col + 0.5f;
-    pool[col] = POOL + POOL_HEAVE * sinf(x * 0.42f + poolPhaseA) * sinf(poolPhaseB + x * 0.13f);
-  }
-
   for (uint8_t row = 0; row < ROWS; row++)
   {
     const float y = (row + 0.5f) * ASPECT;
-    const float depth = Y_MAX - y;
     for (uint8_t col = 0; col < COLS; col++)
     {
       const float x = col + 0.5f;
@@ -174,11 +162,6 @@ void LavaLampPlugin::render()
         {
           value += (1 - d) * (1 - d);
         }
-      }
-      if (depth < pool[col])
-      {
-        const float p = 1 - depth / pool[col];
-        value += p * p * 1.6f;
       }
 
       // LEDs at half power look much brighter than half: squared keeps the edge soft

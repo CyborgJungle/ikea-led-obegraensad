@@ -14,6 +14,7 @@ import {
   CameraPanel,
   ClockPanel,
   DdpPanel,
+  LavaPanel,
   LifePanel,
   WeatherPanel,
 } from "../modes/simple";
@@ -32,6 +33,7 @@ const PANELS: Record<string, { panel: Component<PanelProps>; ownBoard?: boolean 
   ArtNet: { panel: ArtNetPanel },
   DDP: { panel: DdpPanel },
   Weather: { panel: WeatherPanel },
+  Lavalamp: { panel: LavaPanel },
   BigClock: { panel: ClockPanel },
   Clock: { panel: ClockPanel },
   PongClock: { panel: ClockPanel },

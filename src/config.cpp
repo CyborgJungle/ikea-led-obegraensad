@@ -75,6 +75,7 @@ void Config::setDefaults()
   scrollSize = SIZE_LARGE;
   boardText = "Menu\nCoffee 3\nTea 2,50";
   boardSpeed = 120;
+  lavaSpeed = 100;
   countdownSeconds = 60;
   scheduleHoursEnabled = false;
   scheduleFrom = "08:00";
@@ -101,6 +102,7 @@ void Config::load()
     setScrollSize(preferences.getUChar("scrollSize", scrollSize));
     setBoardText(preferences.getString("boardText", boardText));
     setBoardSpeed(preferences.getUShort("boardSpeed", boardSpeed));
+    setLavaSpeed(preferences.getUShort("lavaSpeed", lavaSpeed));
     countdownSeconds = constrain(preferences.getUShort("countdown", countdownSeconds), 1, COUNTDOWN_MAX_SECONDS);
     setScheduleHours(preferences.getBool("schedHours", scheduleHoursEnabled),
                      preferences.getString("schedFrom", scheduleFrom),
@@ -132,6 +134,7 @@ void Config::save()
     preferences.putUChar("scrollSize", scrollSize);
     preferences.putString("boardText", boardText);
     preferences.putUShort("boardSpeed", boardSpeed);
+    preferences.putUShort("lavaSpeed", lavaSpeed);
     preferences.putUShort("countdown", countdownSeconds);
     preferences.putBool("schedHours", scheduleHoursEnabled);
     preferences.putString("schedFrom", scheduleFrom);
@@ -255,6 +258,11 @@ void Config::setBoardSpeed(int speed)
   boardSpeed = constrain(speed, SCROLL_SPEED_MIN, SCROLL_SPEED_MAX);
 }
 
+void Config::setLavaSpeed(int percent)
+{
+  lavaSpeed = constrain(percent, LAVA_SPEED_MIN, LAVA_SPEED_MAX);
+}
+
 void Config::setCountdownSeconds(int seconds)
 {
   countdownSeconds = constrain(seconds, 1, COUNTDOWN_MAX_SECONDS);
@@ -297,6 +305,7 @@ String Config::toJson() const
   doc["scrollSize"] = scrollSize;
   doc["boardText"] = boardText;
   doc["boardSpeed"] = boardSpeed;
+  doc["lavaSpeed"] = lavaSpeed;
   doc["countdownSeconds"] = countdownSeconds;
   doc["scheduleHoursEnabled"] = scheduleHoursEnabled;
   doc["scheduleFrom"] = scheduleFrom;
@@ -368,6 +377,10 @@ bool Config::fromJson(const String& json)
 
   if (doc["boardSpeed"].is<int>()) {
     setBoardSpeed(doc["boardSpeed"].as<int>());
+  }
+
+  if (doc["lavaSpeed"].is<int>()) {
+    setLavaSpeed(doc["lavaSpeed"].as<int>());
   }
 
   // duration first, so {"countdownSeconds": 30, "countdownStart": true} starts 30 s
