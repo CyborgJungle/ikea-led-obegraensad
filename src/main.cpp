@@ -33,6 +33,7 @@
 #include "plugins/CheckerboardPlugin.h"
 #ifdef ESP32
 #include "plugins/CloudsPlugin.h"
+#include "plugins/MoonPlugin.h"
 #endif
 #include "plugins/CirclePlugin.h"
 #include "plugins/CometPlugin.h"
@@ -345,6 +346,7 @@ void baseSetup()
   config.adoptLegacyLavaSpeed(pluginManager.addPlugin(new LavaLampPlugin()));
 #ifdef ESP32
   pluginManager.addPlugin(new CloudsPlugin());
+  pluginManager.addPlugin(new MoonPlugin());
 #endif
 
   Screen.clear();

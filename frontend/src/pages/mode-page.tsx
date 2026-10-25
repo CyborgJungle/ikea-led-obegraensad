@@ -16,6 +16,7 @@ import {
   CloudsPanel,
   DdpPanel,
   LifePanel,
+  MoonPanel,
   WeatherPanel,
 } from "../modes/simple";
 import { SpeedPanel } from "../modes/speed";
@@ -35,6 +36,7 @@ const PANELS: Record<string, { panel: Component<PanelProps>; ownBoard?: boolean 
   DDP: { panel: DdpPanel },
   Weather: { panel: WeatherPanel },
   Clouds: { panel: CloudsPanel },
+  Moon: { panel: MoonPanel },
   BigClock: { panel: ClockPanel },
   Clock: { panel: ClockPanel },
   PongClock: { panel: ClockPanel },

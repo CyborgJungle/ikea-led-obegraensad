@@ -1,10 +1,11 @@
-import { type Component, createSignal, For, onMount, Show } from "solid-js";
+import { type Component, createSignal, For, onCleanup, onMount, Show } from "solid-js";
 
 import { Icon } from "../components/icons";
 import { Section, Slider } from "../components/ui";
 import { useStore } from "../contexts/store";
 import { useToast } from "../contexts/toast";
 import { cameraUrl, certificateUrl, getConfig, getInfo, saveConfig } from "../lib/api";
+import { moonPhase } from "../lib/moon";
 import type { PanelProps } from "./shared";
 
 const CAMERA_STEPS = [
@@ -120,6 +121,41 @@ export const CloudsPanel: Component<PanelProps> = () => (
     data © EUMETSAT.
   </p>
 );
+
+// Moon: today's phase, and where the lamp sees it from
+export const MoonPanel: Component<PanelProps> = () => {
+  const [phase, setPhase] = createSignal(moonPhase(new Date()));
+  const [city, setCity] = createSignal("");
+  onMount(async () => {
+    try {
+      setCity((await getConfig()).weatherLocation ?? "");
+    } catch {
+      // the text works without it
+    }
+  });
+  // the phase changes slowly: a minute is plenty
+  const timer = setInterval(() => setPhase(moonPhase(new Date())), 60000);
+  onCleanup(() => clearInterval(timer));
+  return (
+    <>
+      <section class="card flex items-end justify-between gap-3">
+        <div class="flex flex-col gap-1">
+          <span class="label">Now</span>
+          <span class="text-[20px] font-semibold">{phase().name}</span>
+        </div>
+        <span class="numeral text-[44px]">
+          {Math.round(phase().fraction * 100)}
+          <span class="text-[18px] tracking-normal">% lit</span>
+        </span>
+      </section>
+      <p class="m-0 text-[13px] text-muted">
+        The lamp works the phase out from the time. Seen from{" "}
+        {city() || "the weather location in Settings"}: the lit side points at the sun and the moon
+        is tilted as it stands in that sky, turning through the night.
+      </p>
+    </>
+  );
+};
 
 // DDP: streams frames from LED software like xLights or LedFx
 export const DdpPanel: Component<PanelProps> = () => {

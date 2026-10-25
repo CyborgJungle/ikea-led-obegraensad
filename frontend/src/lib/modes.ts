@@ -24,6 +24,7 @@ const INFO: Record<string, { label?: string; group: ModeGroup; note: string }> =
   PongClock: { label: "Pong Clock", group: "time", note: "Pong keeps the time" },
   TickingClock: { label: "Ticking", group: "time", note: "Clock with seconds" },
   Weather: { group: "time", note: "Now, from wttr.in" },
+  Moon: { group: "time", note: "Today's phase, your sky" },
   Stars: { group: "ambient", note: "Twinkling" },
   Lines: { group: "ambient", note: "Sweeping lines" },
   Circle: { group: "ambient", note: "Growing circles" },

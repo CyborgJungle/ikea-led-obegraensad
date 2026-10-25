@@ -9,10 +9,14 @@ A fork of [ph1p/ikea-led-obegraensad](https://github.com/ph1p/ikea-led-obegraens
 > **⚠ Disclaimer**: Use this code and instructions at your own risk! Improper use may damage the device.
 
 <p>
-  <img src="docs/app-home.png" width="24%" alt="Home: the live lamp, the mode that is showing, brightness" />
-  <img src="docs/app-mode.png" width="24%" alt="Mode: Lavalamp with its speed slider" />
-  <img src="docs/app-modes.png" width="24%" alt="The mode picker: every mode as a colour bar, in groups" />
-  <img src="docs/app-splash.png" width="24%" alt="The start-up screen while the app connects to the lamp" />
+  <img src="docs/app-home.png" width="32%" alt="Home: the live lamp, the mode that is showing, brightness" />
+  <img src="docs/app-modes.png" width="32%" alt="The mode picker: every mode as a colour bar, in groups" />
+  <img src="docs/app-mode.png" width="32%" alt="Mode: Lavalamp with its speed slider" />
+</p>
+<p>
+  <img src="docs/app-moon.png" width="32%" alt="Mode: Moon with tonight's phase, seen from Rotterdam" />
+  <img src="docs/app-camera.png" width="32%" alt="The camera page: the phone's camera live on the lamp, with brightness, contrast, back/front and invert" />
+  <img src="docs/app-splash.png" width="32%" alt="The start-up screen while the app connects to the lamp" />
 </p>
 
 ## Table of Contents
@@ -96,16 +100,20 @@ The web app the lamp serves is redesigned from scratch, made to be added to an i
 | :--- | :--- |
 | **Lavalamp** (mode 45) | A lava lamp: wax resting on the bottom heats up, swells and rises slowly, cools near the top and sinks back. Soft, glowing edges like Blobs, but driven by temperature instead of bouncing; one trip up and down takes about a minute. |
 | **Clouds** (mode 46) | An endless, abstract cloud texture **steered by the real sky**. Every 10 minutes the lamp fetches the newest infrared satellite image of the area around Amsterdam (Meteosat, EUMETSAT, no account needed): where it is cloudy the texture thickens, and it drifts in the direction the real clouds move. It never repeats. Works day and night. *Meteosat data © EUMETSAT.* |
+| **Moon** (mode 47) | The moon as it is now, from new through crescent, half and gibbous to full, with its dark seas. Seen from your weather location: the lit side points at the sun and the moon is tilted as it stands in your sky, turning through the night; a thin crescent shows the faint earthlight on its dark part. The phase is worked out on the lamp from the time (formulas from Meeus' *Astronomical Algorithms*, checked against NASA JPL Horizons); the city is looked up once for its coordinates (Open-Meteo). |
 | **Text** (mode 41) | Scrolling text in three sizes, with letters, €, accents and umlauts in readable pixel fonts. |
 | **Board** (mode 42) | A menu board: text that stands still in the largest size that fits, or scrolls up line by line like a reader when it is longer. |
 | **Timer** (mode 43) | A countdown with presets from 10 s to 5 min, started from the app, digits centred on the lamp, rings rippling out when it is done. |
-| **Camera** (mode 44) | Your phone's camera live on the lamp in 16×16 greyscale, with brightness, contrast, front/back and invert. Runs on the lamp's own HTTPS page, since phones only allow the camera on secure pages; the app walks you through trusting the lamp once. |
+| **Camera** (mode 44) | Your phone's camera live on the lamp in 16×16 greyscale, with brightness, contrast, front/back and invert. Runs on the lamp's own HTTPS page, since phones only allow the camera on secure pages; the app walks you through trusting the lamp once. The camera page has the same design as the app: back button, a live preview of the 16×16 picture and the controls on one screen. |
 
 <p>
   <img src="docs/mode-lavalamp.png" width="100%" alt="Lavalamp on the lamp, a frame every 8 seconds: wax rising from the bottom and sinking back" />
 </p>
 <p>
   <img src="docs/mode-clouds.png" width="100%" alt="Clouds: the Meteosat infrared image of the area, and the lamp's soft clouds drifting through it" />
+</p>
+<p>
+  <img src="docs/mode-moon.png" width="100%" alt="Moon: a month of evenings at 21:00 seen from Rotterdam, from full through new moon and back" />
 </p>
 
 The new modes are added at the end of the list, so every mode of the original keeps its number (saved start-up modes, routines and home automations keep working).
@@ -124,10 +132,10 @@ Every ambient mode has a **Speed** slider on its page, from 0.25× to 4× with 1
 
 ## All modes
 
-46 modes on an ESP32, in the groups of the app's mode picker. Modes marked *new* are added by this fork; the rest come from the original.
+47 modes on an ESP32, in the groups of the app's mode picker. Modes marked *new* are added by this fork; the rest come from the original.
 
 - **Make your own:** Draw, Animation (with an animation creator in the app), Text *new*, Board *new*, Camera *new*
-- **Time & weather:** Big Clock, Clock, Pong Clock, Ticking Clock, Weather, Timer *new*
+- **Time & weather:** Big Clock, Clock, Pong Clock, Ticking Clock, Weather, Moon *new*, Timer *new*
 - **Ambient** (each with a speed slider; Game of Life has its own generation time): Game of Life, Stars, Lines, Circle, Rain, Matrix Rain, Firework, Blobs, Lavalamp *new*, Clouds *new*, Spiral, Wave, Checkerboard, Radar, Bubbles, Comet, Fireflies, Meteor Shower, Scanlines, Sparkle Field, Wave Bars, Spotlight, Face, Falling Sand, Bouncing Ball, Auto Walker
 - **Games** (playing themselves): Breakout, Snake, Tetris, Flappy Bird, Space Invaders, BigPong, Tron
 - **Connect:** DDP (port 4048), Art-Net (port 6454)
